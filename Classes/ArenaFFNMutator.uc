@@ -1,20 +1,21 @@
 
 class ArenaFFNMutator expands Mutator;
 
+var config bool bRemoveDefaultInventory;
 var config string Item[32];
 var config bool bDropWeapon;
-var config bool bRemoveDefaultInventory;
 var config bool bRegenAmmo;
-var config bool bHealthPickup;
-var config bool bInvisibilityPickup;
-var config bool bUDamagePickup;
-var config bool bShieldBeltPickup;
-var config bool bArmorPickup;
 var config bool bWeaponPickup;
 var config bool bAmmoPickup;
 var config bool bReplaceWeaponAndAmmoPickups;
+var config bool bInvisibilityPickup;
+var config bool bUDamagePickup;
 var config bool bSetPlayerStartingHealth;
 var config int PlayerStartingHealth;
+var config bool bHealthPickup;
+var config bool bArmorPickup;
+var config bool bShieldBeltPickup;
+var config bool bArenaFFNMutatorFirstRun;
 
 var class<Weapon> ParsedWeaponsClass[32];
 var string ParsedWeaponsName[32];
@@ -31,6 +32,11 @@ var int SuperHealingAmount;
 
 
 function PreBeginPlay(){
+    if (bArenaFFNMutatorFirstRun){
+        // generate INI entries on first run
+        bArenaFFNMutatorFirstRun=False;
+        SaveConfig(); 
+    }
     InitializeItems();
     bIsModifyingLevelPickups = true;
     bIsModifyingPlayer = false;
@@ -301,12 +307,13 @@ defaultproperties {
     bReplaceWeaponAndAmmoPickups=True
     bRemoveDefaultInventory=True
     bHealthPickup=True
-    bInvisibilityPickup=False
+    bInvisibilityPickup=True
     bUDamagePickup=True
     bShieldBeltPickup=True
-    bArmorPickup=False
+    bArmorPickup=True
     bWeaponPickup=True
     bAmmoPickup=True
     bSetPlayerStartingHealth=False
     PlayerStartingHealth=40
+    bArenaFFNMutatorFirstRun=True
 }
