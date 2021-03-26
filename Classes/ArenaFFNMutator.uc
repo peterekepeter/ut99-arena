@@ -3,6 +3,8 @@ class ArenaFFNMutator expands Mutator;
 
 var config bool bRemoveDefaultInventory;
 var config string Item[32];
+var config float SelfDamageModifier;
+var config float DamageModifier;
 var config bool bDropWeapon;
 var config bool bRegenAmmo;
 var config bool bWeaponPickup;
@@ -47,6 +49,9 @@ function PostBeginPlay()
     SetTimer(1.0, true);
 	Game = DeathMatchPlus(Level.Game);
 	Super.PostBeginPlay();
+    if (DamageModifier != 1.0 || SelfDamageModifier != 1.0){
+        Game.RegisterDamageMutator(self);
+    }
 }
 
 function ModifyPlayer(Pawn pawn)
@@ -96,6 +101,16 @@ function ModifyPlayerHealth(Pawn Player){
             Min(199, Player.Default.Health * 2.0));
     }
     Player.Health = Health;
+}
+
+function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, 
+						out Vector Momentum, name DamageType)
+{
+    ActualDamage *= DamageModifier;
+    if (Victim == InstigatedBy)
+        ActualDamage *= SelfDamageModifier;
+	if ( NextDamageMutator != None )
+		NextDamageMutator.MutatorTakeDamage( ActualDamage, Victim, InstigatedBy, HitLocation, Momentum, DamageType );
 }
 
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
@@ -302,6 +317,8 @@ defaultproperties {
     Item(6)="Botpack.HealthVial"
     Item(7)="Botpack.HealthVial"
     Item(8)="Botpack.HealthVial"
+    SelfDamageModifier=0.0
+    DamageModifier=1.0
     bDropWeapon=True
     bRegenAmmo=False
     bReplaceWeaponAndAmmoPickups=True
@@ -314,6 +331,6 @@ defaultproperties {
     bWeaponPickup=True
     bAmmoPickup=True
     bSetPlayerStartingHealth=False
-    PlayerStartingHealth=40
+    PlayerStartingHealth=100
     bArenaFFNMutatorFirstRun=True
 }
