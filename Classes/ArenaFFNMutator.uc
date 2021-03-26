@@ -13,6 +13,8 @@ var config bool bArmorPickup;
 var config bool bWeaponPickup;
 var config bool bAmmoPickup;
 var config bool bReplaceWeaponAndAmmoPickups;
+var config bool bSetPlayerStartingHealth;
+var config int PlayerStartingHealth;
 
 var class<Weapon> ParsedWeaponsClass[32];
 var string ParsedWeaponsName[32];
@@ -24,17 +26,9 @@ var int PickupCount;
 var DeathMatchPlus Game;
 var bool bIsModifyingPlayer;
 var bool bIsModifyingLevelPickups;
+var int HealingAmount;
+var int SuperHealingAmount;
 
-function ModifyPlayerInventory(Pawn pawn){
-    local int i;
-    if (bRemoveDefaultInventory) DestroyPlayerInventory(pawn);
-    for (i=WeaponCount-1; i>=0; i=i-1){
-        GiveWeapon(pawn, ParsedWeaponsName[i]);
-    }
-    for (i=0; i<PickupCount; i=i+1){
-        GivePickup(pawn, ParsedPickups[i]);
-    }
-}
 
 function PreBeginPlay(){
     InitializeItems();
@@ -57,6 +51,7 @@ function ModifyPlayer(Pawn pawn)
     bIsModifyingLevelPickups = false;
 
     ModifyPlayerInventory(pawn);
+    ModifyPlayerHealth(pawn);
 
 	if ( NextMutator != None )
 		NextMutator.ModifyPlayer(pawn);
@@ -65,6 +60,36 @@ function ModifyPlayer(Pawn pawn)
 	if ( bot != None )
 		bot.bHasImpactHammer = (bot.FindInventoryType(class'ImpactHammer') != None);
     bIsModifyingPlayer = false;
+}
+
+function ModifyPlayerInventory(Pawn pawn){
+    local int i;
+    if (bRemoveDefaultInventory) DestroyPlayerInventory(pawn);
+    for (i=WeaponCount-1; i>=0; i=i-1){
+        GiveWeapon(pawn, ParsedWeaponsName[i]);
+    }
+    for (i=0; i<PickupCount; i=i+1){
+        GivePickup(pawn, ParsedPickups[i]);
+    }
+}
+
+function ModifyPlayerHealth(Pawn Player){
+    local int MaxHealing;
+    local int Health;
+    if (bSetPlayerStartingHealth){
+        Health = PlayerStartingHealth;
+    } else {
+        Health = Player.Default.Health;
+    }
+    if (HealingAmount != 0)
+    {
+        Health = Min(Health + HealingAmount, Player.Default.Health);
+    }
+    if (SuperHealingAmount != 0){
+        Health = Min(Health + SuperHealingAmount, 
+            Min(199, Player.Default.Health * 2.0));
+    }
+    Player.Health = Health;
 }
 
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
@@ -204,29 +229,51 @@ function int GetCurrentAmmo(Pawn P, Weapon W){
 
 function InitializeItems(){
     local int i;
-    local string itemString;
-    local class<Actor> actorClass;
-    local class<Weapon> W;
-    local class<Pickup> PickupClass;
+    local string ItemString;
+    local Class<Actor> ActorClass;
+    local Class<Weapon> WeaponClass;
+    local Class<Pickup> PickupClass;
+    local Class<TournamentHealth> TournamentHealthClass;
+    local Class<Health> HealthClass;
     WeaponCount = 0;
     for (i=0; i<32; i=i+1){
         itemString = Item[i];
         if (itemString == ""){
             continue;
         }
-        actorClass = class<Actor>(DynamicLoadObject(itemString, class'Class'));
-        if (actorClass == None){
+        ActorClass = class<Actor>(DynamicLoadObject(itemString, class'Class'));
+        if (ActorClass == None){
             log("ArenaFFN: Failed to load "$itemString);
             continue;
         }
-        W = class<Weapon>(actorClass);
-        if (W != None){
+        TournamentHealthClass = Class<TournamentHealth>(ActorClass);
+        if (TournamentHealthClass != None){
+            // special handling for UT99 health items
+            if (TournamentHealthClass.Default.bSuperHeal){
+                SuperHealingAmount += TournamentHealthClass.Default.HealingAmount;
+            } else {
+                HealingAmount += TournamentHealthClass.Default.HealingAmount;
+            }
+            continue;
+        }
+        HealthClass = Class<Health>(ActorClass);
+        if (HealthClass != None){
+            // special handling for Unreal health items
+            if (HealthClass.Default.bSuperHeal){
+                SuperHealingAmount += HealthClass.Default.HealingAmount;
+            } else {
+                HealingAmount += HealthClass.Default.HealingAmount;
+            }
+            continue;
+        }
+        WeaponClass = class<Weapon>(ActorClass);
+        if (WeaponClass != None){
             ParsedWeaponsName[WeaponCount] = itemString;
-            ParsedWeaponsClass[WeaponCount] = W;
+            ParsedWeaponsClass[WeaponCount] = WeaponClass;
             WeaponCount = WeaponCount + 1;
             continue;
         }
-        PickupClass = class<Pickup>(actorClass);
+        PickupClass = class<Pickup>(ActorClass);
         if (PickupClass != None){
             ParsedPickups[PickupCount] = PickupClass;
             PickupCount = PickupCount + 1;
@@ -245,6 +292,10 @@ defaultproperties {
     Item(2)="Botpack.UT_JumpBoots"
     Item(3)="Botpack.RocketPack"
     Item(4)="Botpack.Armor2"
+    Item(5)="Botpack.HealthVial"
+    Item(6)="Botpack.HealthVial"
+    Item(7)="Botpack.HealthVial"
+    Item(8)="Botpack.HealthVial"
     bDropWeapon=True
     bRegenAmmo=False
     bReplaceWeaponAndAmmoPickups=True
@@ -256,4 +307,6 @@ defaultproperties {
     bArmorPickup=False
     bWeaponPickup=True
     bAmmoPickup=True
+    bSetPlayerStartingHealth=False
+    PlayerStartingHealth=40
 }
