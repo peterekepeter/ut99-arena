@@ -3,8 +3,12 @@ class ArenaFFNMutator expands Mutator;
 
 var config bool bRemoveDefaultInventory;
 var config string Item[32];
-var config float SelfDamageModifier;
 var config float DamageModifier;
+var config float MomentumModifier;
+var config float SelfDamageModifier;
+var config float SelfMomentumModifier;
+var config float TeamDamageModifier;
+var config float TeamMomentumModifier;
 var config bool bDropWeapon;
 var config bool bRegenAmmo;
 var config bool bWeaponPickup;
@@ -31,6 +35,7 @@ var bool bIsModifyingPlayer;
 var bool bIsModifyingLevelPickups;
 var int HealingAmount;
 var int SuperHealingAmount;
+var bool bModifyTeamDamageOrMomentum;
 
 
 function PreBeginPlay(){
@@ -49,7 +54,14 @@ function PostBeginPlay()
     SetTimer(1.0, true);
 	Game = DeathMatchPlus(Level.Game);
 	Super.PostBeginPlay();
-    if (DamageModifier != 1.0 || SelfDamageModifier != 1.0){
+
+    bModifyTeamDamageOrMomentum = 
+        TeamDamageModifier != 1.0 && 
+        TeamMomentumModifier != 1.0;
+
+    if (DamageModifier != 1.0 || SelfDamageModifier != 1.0 || 
+        MomentumModifier != 1.0 || SelfMomentumModifier != 1.0)
+    {
         Game.RegisterDamageMutator(self);
     }
 }
@@ -106,9 +118,33 @@ function ModifyPlayerHealth(Pawn Player){
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, 
 						out Vector Momentum, name DamageType)
 {
+    local int VictimTeam;
+    local int InstigatorTeam;
+
+    // generic modifiers are always applied
     ActualDamage *= DamageModifier;
-    if (Victim == InstigatedBy)
+    Momentum *= MomentumModifier;
+
+    if (Victim == InstigatedBy) 
+    {
+        // apply self damage/momentum modifiers
         ActualDamage *= SelfDamageModifier;
+        Momentum *= SelfMomentumModifier;
+    }
+    else if (bModifyTeamDamageOrMomentum)
+    {
+        // apply team damage/momentum modifiers
+        VictimTeam = -1;
+        InstigatorTeam = -2;
+        if (Victim != None) 
+            VictimTeam = Victim.PlayerReplicationInfo.Team;
+        if (InstigatedBy != None) 
+            InstigatorTeam = InstigatedBy.PlayerReplicationInfo.Team;
+        if (VictimTeam == InstigatorTeam) {
+            ActualDamage *= TeamDamageModifier;
+            Momentum *= TeamMomentumModifier;
+        }
+    }
 	if ( NextDamageMutator != None )
 		NextDamageMutator.MutatorTakeDamage( ActualDamage, Victim, InstigatedBy, HitLocation, Momentum, DamageType );
 }
@@ -317,8 +353,12 @@ defaultproperties {
     Item(6)="Botpack.HealthVial"
     Item(7)="Botpack.HealthVial"
     Item(8)="Botpack.HealthVial"
-    SelfDamageModifier=0.0
     DamageModifier=1.0
+    MomentumModifier=1.0
+    SelfDamageModifier=1.0
+    SelfMomentumModifier=1.0
+    TeamDamageModifier=1.0
+    TeamMomentumModifier=1.0
     bDropWeapon=True
     bRegenAmmo=False
     bReplaceWeaponAndAmmoPickups=True
