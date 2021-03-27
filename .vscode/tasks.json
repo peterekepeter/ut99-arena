@@ -12,7 +12,7 @@
         {
             "label": "build&run",
             "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make && UnrealTournament.exe dm-fractal?mutator=ArenaFFN.ArenaFFNMutator",
+            "command": "cd ../System && del ArenaFFN.u && ucc make && UnrealTournament.exe dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.ArenaFFNMutator",
             "problemMatcher": []
         }
     ]

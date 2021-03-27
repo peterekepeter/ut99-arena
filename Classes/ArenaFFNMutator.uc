@@ -55,9 +55,10 @@ function PostBeginPlay()
 	Game = DeathMatchPlus(Level.Game);
 	Super.PostBeginPlay();
 
-    bModifyTeamDamageOrMomentum = 
-        TeamDamageModifier != 1.0 && 
-        TeamMomentumModifier != 1.0;
+    bModifyTeamDamageOrMomentum = Game.bTeamGame && (
+        TeamDamageModifier != 1.0 ||
+        TeamMomentumModifier != 1.0
+    );
 
     if (DamageModifier != 1.0 || SelfDamageModifier != 1.0 || 
         MomentumModifier != 1.0 || SelfMomentumModifier != 1.0)
@@ -97,7 +98,6 @@ function ModifyPlayerInventory(Pawn pawn){
 }
 
 function ModifyPlayerHealth(Pawn Player){
-    local int MaxHealing;
     local int Health;
     if (bSetPlayerStartingHealth){
         Health = PlayerStartingHealth;
