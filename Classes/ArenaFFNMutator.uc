@@ -21,6 +21,8 @@ var config int PlayerStartingHealth;
 var config bool bHealthPickup;
 var config bool bArmorPickup;
 var config bool bShieldBeltPickup;
+var config bool bShuffleWeapons;
+var config int ShuffleTimer;
 var config bool bArenaFFNMutatorFirstRun;
 
 var class<Weapon> ParsedWeaponsClass[32];
@@ -36,6 +38,12 @@ var bool bIsModifyingLevelPickups;
 var int HealingAmount;
 var int SuperHealingAmount;
 var bool bModifyTeamDamageOrMomentum;
+var color ShuffleMessageColor;
+
+var int ShuffleTimerCounter;
+var int CurrentShuffleWeaponIndex;
+var int NextShuffleWeaponIndex;
+var bool bGameStarted;
 
 
 function PreBeginPlay(){
@@ -44,9 +52,31 @@ function PreBeginPlay(){
         bArenaFFNMutatorFirstRun=False;
         SaveConfig(); 
     }
-    InitializeItems();
+    InitializePickupsAndWeapons();
+    InitializeShuffleWeapons();
     bIsModifyingLevelPickups = true;
     bIsModifyingPlayer = false;
+    bGameStarted = false;
+}
+
+function InitializeShuffleWeapons(){
+    ShuffleTimerCounter = ShuffleTimer;
+    if (bShuffleWeapons && WeaponCount <= 1){
+        bShuffleWeapons = false;
+        log("ArenaFFN: WARNING! bShuffleWeapons requires at least 2 weapons to work, disabling bShuffleWeapons");
+        bShuffleWeapons = false;
+    }
+    if (bShuffleWeapons){
+        NextShuffleWeaponIndex = Rand(WeaponCount);
+        if (bWeaponPickup){
+            log("ArenaFFN: WARNING! bShuffleWeapons requires bWeaponPickup to be False");
+            bWeaponPickup = false;
+        }
+        if (bDropWeapon){
+            log("ArenaFFN: WARNING! setting bDropWeapon to False because bShuffleWeapons is True");
+            bDropWeapon = false;
+        }
+    }
 }
 
 function PostBeginPlay()
@@ -55,22 +85,30 @@ function PostBeginPlay()
 	Game = DeathMatchPlus(Level.Game);
 	Super.PostBeginPlay();
 
-    bModifyTeamDamageOrMomentum = Game.bTeamGame && (
-        TeamDamageModifier != 1.0 ||
-        TeamMomentumModifier != 1.0
-    );
+    if (Game != None){
 
-    if (DamageModifier != 1.0 || SelfDamageModifier != 1.0 || 
-        MomentumModifier != 1.0 || SelfMomentumModifier != 1.0)
-    {
-        Game.RegisterDamageMutator(self);
+        bModifyTeamDamageOrMomentum = Game.bTeamGame && (
+            TeamDamageModifier != 1.0 ||
+            TeamMomentumModifier != 1.0
+        );
+
+        if (DamageModifier != 1.0 || SelfDamageModifier != 1.0 || 
+            MomentumModifier != 1.0 || SelfMomentumModifier != 1.0)
+        {
+            Game.RegisterDamageMutator(self);
+        }
     }
+    else {
+        log("ArenaFFN: WARNING! incompatible gametype, expected gametype to be subclass of DeathMatchPlus, damage/momentum modifier will not work");
+    }
+
 }
 
 function ModifyPlayer(Pawn pawn)
 {
 	// called by GameInfo.RestartPlayer()
     local Bot bot;
+    bGameStarted = true;
     bIsModifyingPlayer = true;
     bIsModifyingLevelPickups = false;
 
@@ -88,9 +126,21 @@ function ModifyPlayer(Pawn pawn)
 
 function ModifyPlayerInventory(Pawn pawn){
     local int i;
-    if (bRemoveDefaultInventory) DestroyPlayerInventory(pawn);
-    for (i=WeaponCount-1; i>=0; i=i-1){
-        GiveWeapon(pawn, ParsedWeaponsName[i]);
+    if (bRemoveDefaultInventory) {
+        DestroyPlayerInventory(pawn);
+    } 
+    else if (bShuffleWeapons) {
+        DestroyPlayerWeapons(pawn);
+    }
+    if (bShuffleWeapons){
+        // give only the current weapon
+        GiveWeapon(pawn, ParsedWeaponsName[CurrentShuffleWeaponIndex]);
+    }   
+    else {
+        // give out all weapons
+        for (i=WeaponCount-1; i>=0; i=i-1){
+            GiveWeapon(pawn, ParsedWeaponsName[i]);
+        }
     }
     for (i=0; i<PickupCount; i=i+1){
         GivePickup(pawn, ParsedPickups[i]);
@@ -206,6 +256,22 @@ function DestroyPlayerInventory(pawn PlayerPawn)
 	PlayerPawn.SelectedItem = None;
 }
 
+function DestroyPlayerWeapons(pawn PlayerPawn)
+{
+	local Inventory i;
+    local Weapon w;
+    
+	for( i=PlayerPawn.Inventory; i!=None; i=i.Inventory )
+	{
+        w = Weapon(i);
+        if (w != None){
+            w.Finish();
+            i.Destroy();
+        }
+	}
+	PlayerPawn.Weapon = None;
+}
+
 function GiveWeapon(Pawn pawn, String weaponString){
     Game.GiveWeapon(pawn, weaponString);
     pawn.Weapon.bCanThrow = bDropWeapon;
@@ -240,8 +306,28 @@ function Timer()
 {
     local Weapon W;
     local Pawn P;
+    if (!bGameStarted){
+        return;
+    }
+    if (bShuffleWeapons)
+    {
+        ShuffleTimerCounter -= 1;
+        if (ShuffleTimerCounter <= 0){
+            NextShuffleWeapon();
+        }
+    }
 	for (P=Level.PawnList; P!=None; P=P.NextPawn)
     {
+        if (bShuffleWeapons){
+
+            if (P.Weapon == None || P.Weapon.Class != ParsedWeaponsClass[CurrentShuffleWeaponIndex]){
+                DestroyPlayerWeapons(P);
+                GiveWeapon(P, ParsedWeaponsName[CurrentShuffleWeaponIndex]);
+            }
+            if (ShuffleTimerCounter > 0 && ShuffleTimerCounter <= 3) {
+                ShowShuffleMessage(P);
+            }
+        }
         if (P.Weapon != None){
             W = P.Weapon;
             // regenerate some ammo
@@ -253,6 +339,34 @@ function Timer()
             }
         }
     }
+}
+
+function NextShuffleWeapon(){
+    CurrentShuffleWeaponIndex = NextShuffleWeaponIndex;
+    NextShuffleWeaponIndex = Rand(WeaponCount);
+    // make sure next weapon is always different
+    if (CurrentShuffleWeaponIndex == NextShuffleWeaponIndex)
+    {
+        NextShuffleWeaponIndex = (NextShuffleWeaponIndex + 1) % WeaponCount;
+    }
+    ShuffleTimerCounter = ShuffleTimer;
+}
+
+function ShowShuffleMessage(Pawn pawn){
+    local PlayerPawn player;
+    local String weaponName;
+
+    player = PlayerPawn(pawn);
+    if (player == None){
+        return; // no player to show message for
+    }
+
+    player.ClearProgressMessages();
+    player.SetProgressTime(1);
+    
+    player.SetProgressColor(ShuffleMessageColor, 5);
+    weaponName = ParsedWeaponsClass[NextShuffleWeaponIndex].Default.ItemName;
+    player.SetProgressMessage(weaponName$" in "$ShuffleTimerCounter, 5);
 }
 
 function bool WeaponIsFiring(Weapon W)
@@ -284,7 +398,7 @@ function int GetCurrentAmmo(Pawn P, Weapon W){
     return Ammo.AmmoAmount;
 }
 
-function InitializeItems(){
+function InitializePickupsAndWeapons(){
     local int i;
     local string ItemString;
     local Class<Actor> ActorClass;
@@ -372,5 +486,8 @@ defaultproperties {
     bAmmoPickup=True
     bSetPlayerStartingHealth=False
     PlayerStartingHealth=100
+    bShuffleWeapons=True
+    ShuffleTimer=30
+    ShuffleMessageColor=(R=255,G=255,B=255)
     bArenaFFNMutatorFirstRun=True
 }
