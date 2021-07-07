@@ -23,6 +23,7 @@ var config bool bArmorPickup;
 var config bool bShieldBeltPickup;
 var config bool bShuffleWeapons;
 var config int ShuffleTimer;
+var config bool bReplaceDMMutatorToAllowAnyItem;
 var config bool bArenaFFNMutatorFirstRun;
 
 var class<Weapon> ParsedWeaponsClass[32];
@@ -51,6 +52,9 @@ function PreBeginPlay(){
         // generate INI entries on first run
         bArenaFFNMutatorFirstRun=False;
         SaveConfig(); 
+    }
+    if (bReplaceDMMutatorToAllowAnyItem){
+        ReplaceDMMutator();
     }
     InitializePickupsAndWeapons();
     InitializeShuffleWeapons();
@@ -102,6 +106,31 @@ function PostBeginPlay()
         log("ArenaFFN: WARNING! incompatible gametype, expected gametype to be subclass of DeathMatchPlus, damage/momentum modifier will not work");
     }
 
+}
+
+function ReplaceDMMutator(){
+    local Mutator newMutator;
+    local Mutator oldMutator;
+    oldMutator = Level.Game.BaseMutator;
+    if (oldMutator != None && oldMutator.IsA('DMMutator')){
+        newMutator = Spawn(class'ArenaFFNCustomDMMutator');
+        if (newMutator == None){
+            log("ArenaFFN: Failed to replace DMMutator: Failed to spawn ArenaFFNCustomDMMutator");
+            return;
+        }
+        newMutator.NextMutator = oldMutator.NextMutator;
+        oldMutator.NextMutator = None;
+        Level.Game.BaseMutator = newMutator;
+
+        // due to how GameInfo is implemented, because if the 
+        // replacement it will fail to add this mutator to the list of mutators
+        // this workaround will manually chain this mutator to the end of the mutator list
+        newMutator.AddMutator(self);
+
+        log("ArenaFFN: Replaced "$oldMutator$" with "$newMutator);
+    } else {
+        log("ArenaFFN: Failed to replace DMMutator: Level.Game.BaseMutator is not DMMutator");
+    }
 }
 
 function ModifyPlayer(Pawn pawn)
@@ -490,4 +519,5 @@ defaultproperties {
     ShuffleTimer=30
     ShuffleMessageColor=(R=255,G=255,B=255)
     bArenaFFNMutatorFirstRun=True
+    bReplaceDMMutatorToAllowAnyItem=False
 }

@@ -10,9 +10,15 @@
             "problemMatcher": []
         },
         {
-            "label": "build&run",
+            "label": "build & run server",
             "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make && UnrealTournament.exe dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.ArenaFFNMutator",
+            "command": "cd ../System && del ArenaFFN.u && ucc make && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.ArenaFFNMutator",
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run game",
+            "type": "shell",
+            "command": "cd ../System && del ArenaFFN.u && ucc make && UnrealTournament dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.ArenaFFNMutator",
             "problemMatcher": []
         }
     ]
