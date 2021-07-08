@@ -72,6 +72,7 @@ function InitializeShuffleWeapons(){
     }
     if (bShuffleWeapons){
         NextShuffleWeaponIndex = Rand(WeaponCount);
+        NextShuffleWeapon();
         if (bWeaponPickup){
             log("ArenaFFN: WARNING! bShuffleWeapons requires bWeaponPickup to be False");
             bWeaponPickup = false;
