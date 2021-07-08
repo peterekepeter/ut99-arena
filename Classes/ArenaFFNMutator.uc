@@ -133,6 +133,15 @@ function ReplaceDMMutator(){
     }
 }
 
+function AddMutator(Mutator M)
+{
+    // don't add the same mutator twice, this can happen with this mutator
+    // because if its custom handling when replacing the DM mutator with a custom mutator
+    if (M == self) return;
+    // same functionality as parent
+    super.AddMutator(M); 
+}
+
 function ModifyPlayer(Pawn pawn)
 {
 	// called by GameInfo.RestartPlayer()

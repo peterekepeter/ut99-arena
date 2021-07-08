@@ -24,16 +24,6 @@ function bool AlwaysKeep(Actor Other)
 	return false;
 }
 
-function AddMutator(Mutator M)
-{
-    log("ArenaFFNCustomDMMutator: add mutator "$M);
-	if ( NextMutator == None )
-		NextMutator = M;
-	else
-		NextMutator.AddMutator(M);
-}
-
-
 function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
 {
 	local Inventory Inv;
