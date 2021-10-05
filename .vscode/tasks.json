@@ -16,15 +16,33 @@
             "problemMatcher": []
         },
         {
-            "label": "build & run server",
+            "label": "build & run server profile1",
             "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.ArenaFFNMutator",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile1",
             "problemMatcher": []
         },
         {
-            "label": "build & run game",
+            "label": "build & run server profile2",
             "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && UnrealTournament dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.ArenaFFNMutator",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile2",
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run server profile3",
+            "type": "shell",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile3",
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run server profile4",
+            "type": "shell",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile4",
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run server profile5",
+            "type": "shell",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile5",
             "problemMatcher": []
         },
         {

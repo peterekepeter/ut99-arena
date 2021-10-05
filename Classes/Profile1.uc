@@ -1,0 +1,1 @@
+class Profile1 extends ArenaFFN;
