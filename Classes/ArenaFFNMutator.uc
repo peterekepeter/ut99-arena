@@ -1,6 +1,12 @@
 
 class ArenaFFNMutator expands Mutator;
 
+const MAX_REPLACEMENT_RULES = 32;
+CONST MAX_ITEMS = 32;
+
+var config string Description;
+var config bool bFirstRun;
+var config string Replace[32];
 var config bool bRemoveDefaultInventory;
 var config string Item[32];
 var config float DamageModifier;
@@ -11,25 +17,14 @@ var config float TeamDamageModifier;
 var config float TeamMomentumModifier;
 var config bool bDropWeapon;
 var config bool bRegenAmmo;
-var config bool bWeaponPickup;
-var config bool bAmmoPickup;
-var config bool bReplaceWeaponAndAmmoPickups;
-var config bool bInvisibilityPickup;
-var config bool bUDamagePickup;
 var config bool bSetPlayerStartingHealth;
 var config int PlayerStartingHealth;
-var config bool bHealthPickup;
-var config bool bArmorPickup;
-var config bool bShieldBeltPickup;
 var config bool bShuffleWeapons;
 var config int ShuffleTimer;
 var config bool bReplaceDMMutatorToAllowAnyItem;
-var config bool bArenaFFNMutatorFirstRun;
 
 var class<Weapon> ParsedWeaponsClass[32];
 var string ParsedWeaponsName[32];
-var class<Weapon> PrimaryWeaponClass;
-var string PrimaryWeaponName;
 var int WeaponCount;
 var class<Pickup> ParsedPickups[32];
 var int PickupCount;
@@ -40,6 +35,7 @@ var int HealingAmount;
 var int SuperHealingAmount;
 var bool bModifyTeamDamageOrMomentum;
 var color ShuffleMessageColor;
+var ArenaFFNReplacementRules ReplacementRules;
 
 var int ShuffleTimerCounter;
 var int CurrentShuffleWeaponIndex;
@@ -48,37 +44,47 @@ var bool bGameStarted;
 
 
 function PreBeginPlay(){
-    if (bArenaFFNMutatorFirstRun){
+    if (bFirstRun){
         // generate INI entries on first run
-        bArenaFFNMutatorFirstRun=False;
+        bFirstRun=False;
         SaveConfig(); 
     }
     if (bReplaceDMMutatorToAllowAnyItem){
         ReplaceDMMutator();
     }
     InitializePickupsAndWeapons();
+    InitializeReplacementRules();
     InitializeShuffleWeapons();
     bIsModifyingLevelPickups = true;
     bIsModifyingPlayer = false;
     bGameStarted = false;
+    Nfo("registered"@ReplacementRules.GetRuleCount()@"replacement rules");
+}
+
+function InitializeReplacementRules(){
+    local int i;
+    ReplacementRules = Spawn(class'ArenaFFNReplacementRules');
+    for (i = 0; i < MAX_REPLACEMENT_RULES; i += 1){
+        ReplacementRules.AddRuleString(Replace[i]);
+    }
 }
 
 function InitializeShuffleWeapons(){
+    local string rule;
     ShuffleTimerCounter = ShuffleTimer;
     if (bShuffleWeapons && WeaponCount <= 1){
         bShuffleWeapons = false;
-        log("ArenaFFN: WARNING! bShuffleWeapons requires at least 2 weapons to work, disabling bShuffleWeapons");
+        Nfo("bShuffleWeapons requires at least 2 weapons to work, disabling bShuffleWeapons");
         bShuffleWeapons = false;
     }
     if (bShuffleWeapons){
+        rule = "Engine.Weapon->None,Engine.Ammo->None";
         NextShuffleWeaponIndex = Rand(WeaponCount);
         NextShuffleWeapon();
-        if (bWeaponPickup){
-            log("ArenaFFN: WARNING! bShuffleWeapons requires bWeaponPickup to be False");
-            bWeaponPickup = false;
-        }
+        ReplacementRules.AddRuleString(rule);
+        Nfo("bShuffleWeapons disables weapon pickups by adding level replacement rule"@rule);
         if (bDropWeapon){
-            log("ArenaFFN: WARNING! setting bDropWeapon to False because bShuffleWeapons is True");
+            Nfo("setting bDropWeapon to False because bShuffleWeapons is True");
             bDropWeapon = false;
         }
     }
@@ -104,7 +110,7 @@ function PostBeginPlay()
         }
     }
     else {
-        log("ArenaFFN: WARNING! incompatible gametype, expected gametype to be subclass of DeathMatchPlus, damage/momentum modifier will not work");
+        Nfo("Incompatible gametype, expected gametype to be subclass of DeathMatchPlus, damage/momentum modifier will not work");
     }
 
 }
@@ -116,7 +122,7 @@ function ReplaceDMMutator(){
     if (oldMutator != None && oldMutator.IsA('DMMutator')){
         newMutator = Spawn(class'ArenaFFNCustomDMMutator');
         if (newMutator == None){
-            log("ArenaFFN: Failed to replace DMMutator: Failed to spawn ArenaFFNCustomDMMutator");
+            Err("Failed to replace DMMutator: Failed to spawn ArenaFFNCustomDMMutator");
             return;
         }
         newMutator.NextMutator = oldMutator.NextMutator;
@@ -128,9 +134,9 @@ function ReplaceDMMutator(){
         // this workaround will manually chain this mutator to the end of the mutator list
         newMutator.AddMutator(self);
 
-        log("ArenaFFN: Replaced "$oldMutator$" with "$newMutator);
+        Nfo("Replaced "$oldMutator$" with "$newMutator);
     } else {
-        log("ArenaFFN: Failed to replace DMMutator: Level.Game.BaseMutator is not DMMutator");
+        Err("Failed to replace DMMutator: Level.Game.BaseMutator is not DMMutator");
     }
 }
 
@@ -238,42 +244,26 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		NextDamageMutator.MutatorTakeDamage( ActualDamage, Victim, InstigatedBy, HitLocation, Momentum, DamageType );
 }
 
-function bool CheckReplacement(Actor Other, out byte bSuperRelevant)
+function bool CheckReplacement(Actor other, out byte bSuperRelevant)
 { 
+    local string replacementResult;
     // called by Mutator.IsRelevant
-    if (bIsModifyingPlayer) return true;
-    if (bIsModifyingLevelPickups) {
-        if (Other.IsA('TournamentHealth')) return bHealthPickup;
-        if (Other.IsA('UT_Invisibility')) return bInvisibilityPickup;
-        if (Other.IsA('UDamage')) return bUDamagePickup;
-        if (Other.IsA('UT_Shieldbelt')) return bShieldBeltPickup;
-        if ((Other.IsA('Armor2') || Other.IsA('ThighPads'))) return bArmorPickup;
-        if (bReplaceWeaponAndAmmoPickups && PrimaryWeaponClass != None){
-            if (Other.IsA('Weapon')) {
-                if (!bWeaponPickup){
-                    return false;
-                }
-                if (Other.Class == PrimaryWeaponClass){
-                    return true;
-                }
-                ReplaceWith(Other, PrimaryWeaponName);
-                return false;
-            }
-            if (Other.IsA('Ammo')){
-                if (!bAmmoPickup){
-                    return false;
-                }
-                if (Other.Class == PrimaryWeaponClass.Default.AmmoName){
-                    return true;
-                }
-                ReplaceWith(Other, ""$PrimaryWeaponClass.Default.AmmoName);
-                return false;
-            }
-        } else {
-            if (Other.IsA('Weapon')) return bWeaponPickup;
-            if (Other.IsA('Ammo')) return bAmmoPickup;
+    if (bIsModifyingPlayer) {
+        return true;
+    }
+    if (ReplacementRules.TryGetReplacementClassString(other, replacementResult)){
+        if (ReplacementRules.IsKeep(replacementResult)){
+            return true;
+        } 
+        else if (ReplacementRules.IsNone(replacementResult)){
+            return false;
+        }
+        else {
+            ReplaceWith(other, replacementResult);
+            return false;
         }
     }
+    
     bSuperRelevant = 0;
 	return true;
 }
@@ -322,7 +312,7 @@ function GivePickup(Pawn pawn, class<Pickup> pickupClass){
     item = Spawn(pickupClass);
     item.RespawnTime = 0;
     if (item == None){
-        log("ArenaFFN: failed to spawn item "$pickupClass);
+        Err("failed to spawn item "$pickupClass);
         return;
     }
     intentory = pawn.FindInventoryType(pickupClass);
@@ -330,7 +320,7 @@ function GivePickup(Pawn pawn, class<Pickup> pickupClass){
         // stack items with existing items
         if (intentory.HandlePickupQuery(item)){
             if (!item.Destroy()){
-                log("ArenaFFN: failed to destroy handled item "$item);
+                Err("failed to destroy handled item "$item);
             }
             return; // handled by existing inventory
         }
@@ -358,7 +348,7 @@ function Timer()
 	for (P=Level.PawnList; P!=None; P=P.NextPawn)
     {
         if (bShuffleWeapons){
-
+            bIsModifyingPlayer = true;
             if (P.Weapon == None || P.Weapon.Class != ParsedWeaponsClass[CurrentShuffleWeaponIndex]){
                 DestroyPlayerWeapons(P);
                 GiveWeapon(P, ParsedWeaponsName[CurrentShuffleWeaponIndex]);
@@ -366,6 +356,7 @@ function Timer()
             if (ShuffleTimerCounter > 0 && ShuffleTimerCounter <= 3) {
                 ShowShuffleMessage(P);
             }
+            bIsModifyingPlayer = false;
         }
         if (P.Weapon != None){
             W = P.Weapon;
@@ -446,14 +437,14 @@ function InitializePickupsAndWeapons(){
     local Class<TournamentHealth> TournamentHealthClass;
     local Class<Health> HealthClass;
     WeaponCount = 0;
-    for (i=0; i<32; i=i+1){
+    for (i=0; i<MAX_ITEMS; i=i+1){
         itemString = Item[i];
         if (itemString == ""){
             continue;
         }
         ActorClass = class<Actor>(DynamicLoadObject(itemString, class'Class'));
         if (ActorClass == None){
-            log("ArenaFFN: Failed to load "$itemString);
+            Err("Failed to load "$itemString);
             continue;
         }
         TournamentHealthClass = Class<TournamentHealth>(ActorClass);
@@ -489,23 +480,23 @@ function InitializePickupsAndWeapons(){
             PickupCount = PickupCount + 1;
             continue;
         }
-        log("ArenaFFN: Not a valid item "$itemString);
+        Err("Not a valid item "$itemString);
     }
-    PrimaryWeaponClass = ParsedWeaponsClass[0];
-    PrimaryWeaponName = ParsedWeaponsName[0];
-    log("ArenaFFN: loaded "$WeaponCount$" weapons, "$PickupCount$" pickups, primary weapon is "$PrimaryWeaponClass);
+    Nfo("loaded "$WeaponCount$" weapons, "$PickupCount$" pickups");
+}
+
+static function Err(coerce string message)
+{
+    class'ArenaFFNUtil'.static.Err(message);
+}
+
+static function Nfo(coerce string message)
+{
+    class'ArenaFFNUtil'.static.Nfo(message);
 }
 
 defaultproperties {
-    Item(0)="Botpack.UT_Eightball"
-    Item(1)="Botpack.Translocator"
-    Item(2)="Botpack.UT_JumpBoots"
-    Item(3)="Botpack.RocketPack"
-    Item(4)="Botpack.Armor2"
-    Item(5)="Botpack.HealthVial"
-    Item(6)="Botpack.HealthVial"
-    Item(7)="Botpack.HealthVial"
-    Item(8)="Botpack.HealthVial"
+    Description="Your description here!"
     DamageModifier=1.0
     MomentumModifier=1.0
     SelfDamageModifier=1.0
@@ -514,20 +505,12 @@ defaultproperties {
     TeamMomentumModifier=1.0
     bDropWeapon=True
     bRegenAmmo=False
-    bReplaceWeaponAndAmmoPickups=True
-    bRemoveDefaultInventory=True
-    bHealthPickup=True
-    bInvisibilityPickup=True
-    bUDamagePickup=True
-    bShieldBeltPickup=True
-    bArmorPickup=True
-    bWeaponPickup=True
-    bAmmoPickup=True
+    bRemoveDefaultInventory=False
     bSetPlayerStartingHealth=False
     PlayerStartingHealth=100
-    bShuffleWeapons=True
+    bShuffleWeapons=False
     ShuffleTimer=30
     ShuffleMessageColor=(R=255,G=255,B=255)
-    bArenaFFNMutatorFirstRun=True
+    bFirstRun=True
     bReplaceDMMutatorToAllowAnyItem=False
 }

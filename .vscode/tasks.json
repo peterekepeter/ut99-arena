@@ -26,6 +26,22 @@
             "type": "shell",
             "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && UnrealTournament dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.ArenaFFNMutator",
             "problemMatcher": []
+        },
+        {
+            "label": "join server",
+            "type": "shell",
+            "command": "cd ../System && UnrealTournament.exe unreal://127.0.0.1:7777 -log",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "close": true,
+                "focus": false,
+                "panel": "shared",
+                "group": "joinGroup",
+                "showReuseMessage": true,
+                "clear": true
+            }
         }
     ]
 }
