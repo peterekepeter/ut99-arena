@@ -46,6 +46,24 @@
             "problemMatcher": []
         },
         {
+            "label": "build & run server profile6",
+            "type": "shell",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile6",
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run server profile7",
+            "type": "shell",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-curse][?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile7",
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run server profile8",
+            "type": "shell",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-curse][?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile8",
+            "problemMatcher": []
+        },
+        {
             "label": "join server",
             "type": "shell",
             "command": "cd ../System && UnrealTournament.exe unreal://127.0.0.1:7777 -log",

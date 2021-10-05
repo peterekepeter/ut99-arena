@@ -2,6 +2,18 @@ class ArenaFFNParser extends ArenaFFNInfo abstract;
 
 const EMPTY_STRING = "";
 
+static function bool TryParseLoadoutItem(string input, out string itemClass, out int itemCount){
+    local string count;
+    local bool result;
+    result = TrySplit(input, "*", itemClass, count);
+    if (count == ""){
+        itemCount = 1;
+    } else {
+        itemCount = int(count);
+    }
+    return result;
+}
+
 static function bool TryParseReplacementRule(string input, out string toReplace, out string replaceWith)
 {
     return TrySplit(input, "->", toReplace, replaceWith) && replaceWith != EMPTY_STRING;

@@ -1,22 +1,24 @@
 class ArenaFFNLoadout extends ArenaFFNInfo;
 
-const MAX_ITEMS = 32;
+const MAX_ITEMS = 132;
 
 var int HealingAmount;
 var int SuperHealingAmount;
-var class<Weapon> ParsedWeaponsClass[32];
-var string ParsedWeaponsName[32];
+var class<Weapon> ParsedWeaponsClass[132];
+var string ParsedWeaponsName[132];
 var int WeaponCount;
-var class<Pickup> ParsedPickups[32];
+var class<Pickup> ParsedPickups[132];
 var int PickupCount;
 var bool bRemoveDefaultInventory;
 var bool bSetPlayerStartingHealth;
 var int PlayerStartingHealth;
 var bool bCanThrow;
+var class<ArenaFFNParser> Parser;
 
 function PreBeginPlay(){
     WeaponCount = 0;
     PickupCount = 0;
+    Parser = Class'ArenaFFNParser';
 }
 
 function ConfigurePlayerStartingHealth(bool setHealth, int toValue)
@@ -47,6 +49,18 @@ function string GetWeaponString(int index){
 
 function class<Weapon> GetWeaponClass(int index){
     return ParsedWeaponsClass[index];
+}
+
+function AddLoadoutConfigLine(string input){
+    local string listItem, classString;
+    local int count, i;
+    while (Parser.static.TrySplit(input, ",", listItem, input)) {
+        if (Parser.static.TryParseLoadoutItem(listItem, classString, count)){
+            for (i=0; i<count; i+=1){
+                AddItemString(classString);
+            }
+        }
+    }
 }
 
 function AddItemString(string itemString){
@@ -86,6 +100,10 @@ function AddItemString(string itemString){
     }
     WeaponClass = class<Weapon>(ActorClass);
     if (WeaponClass != None){
+        if (WeaponCount >= MAX_ITEMS){
+            Err("Too many weapons, failed to add"@WeaponClass);
+            return;
+        }
         ParsedWeaponsName[WeaponCount] = itemString;
         ParsedWeaponsClass[WeaponCount] = WeaponClass;
         WeaponCount = WeaponCount + 1;
@@ -93,6 +111,10 @@ function AddItemString(string itemString){
     }
     PickupClass = class<Pickup>(ActorClass);
     if (PickupClass != None){
+        if (PickupCount >= MAX_ITEMS){
+            Err("Too many pickups, failed to add"@PickupClass);
+            return;
+        }
         ParsedPickups[PickupCount] = PickupClass;
         PickupCount = PickupCount + 1;
         return;

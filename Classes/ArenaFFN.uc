@@ -6,6 +6,7 @@ CONST MAX_LOUADOUT_ITEM = 32;
 
 var config string Description;
 var config bool bFirstRun;
+var config bool bDebugLog;
 var config string Replace[32];
 var config bool bReplaceDMMutatorToAllowAnyItem;
 var config bool bRemoveDefaultInventory;
@@ -66,7 +67,7 @@ function InitializeLouadout(){
     ArenaLoadout.ConfigurePlayerStartingHealth(bSetPlayerStartingHealth, PlayerStartingHealth);
     ArenaLoadout.SetCanThrowWeapon(bDropWeapon);
     for (i=0; i<MAX_LOUADOUT_ITEM; i=i+1){
-        ArenaLoadout.AddItemString(Loadout[i]);
+        ArenaLoadout.AddLoadoutConfigLine(Loadout[i]);
     }
 }
 
@@ -190,12 +191,21 @@ function bool CheckReplacement(Actor other, out byte bSuperRelevant)
     }
     if (ReplacementRules.TryGetReplacementClassString(other, replacementResult)){
         if (ReplacementRules.IsKeep(replacementResult)){
+            if (bDebugLog){
+                Nfo("keep"@other);
+            }
             return true;
         } 
         else if (ReplacementRules.IsNone(replacementResult)){
+            if (bDebugLog){
+                Nfo("delete"@other);
+            }
             return false;
         }
         else {
+            if (bDebugLog){
+                Nfo("replace"@other@"with"@replacementResult);
+            }
             ReplaceWith(other, replacementResult);
             return false;
         }
@@ -265,6 +275,7 @@ defaultproperties {
     SelfMomentumModifier=1.0
     TeamDamageModifier=1.0
     TeamMomentumModifier=1.0
+    bDebugLog=False
     bDropWeapon=True
     bRegenAmmo=False
     bRemoveDefaultInventory=False
