@@ -182,6 +182,24 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 		NextDamageMutator.MutatorTakeDamage( ActualDamage, Victim, InstigatedBy, HitLocation, Momentum, DamageType );
 }
 
+function bool AlwaysKeep(Actor Other)
+{
+    local string replacementResult;
+
+    if (ReplacementRules.TryGetReplacementClassString(other, replacementResult)){
+        if (ReplacementRules.IsKeep(replacementResult)){
+            if (bDebugLog){
+                Nfo("keep"@other);
+            }
+            return true;
+        } 
+    }
+
+	if ( NextMutator != None )
+		return ( NextMutator.AlwaysKeep(Other) );
+	return false;
+}
+
 function bool CheckReplacement(Actor other, out byte bSuperRelevant)
 { 
     local string replacementResult;
