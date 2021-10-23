@@ -142,7 +142,12 @@ function bool _AddAmmoReplacement(class replaceClass, class withClass){
     local class replaceAmmoClass, withAmmoClass;
     replaceAmmoClass = _GetAmmoClass(class<Weapon>(replaceClass));
     withAmmoClass = _GetAmmoClass(class<Weapon>(withClass));
+    if (replaceAmmoClass == None || withAmmoClass == None){
+        // okay, one of the weapons has no ammo class
+        return true;
+    }
     if (_GetReplacementIndex(replaceAmmoClass) != -1){
+        // okay, there is already a replacement rule for ammo type
         return true;
     }
     return _AddRule(string(replaceAmmoClass), string(withAmmoClass));
