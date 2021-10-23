@@ -37,6 +37,7 @@ var ArenaFFNAmmoRegen AmmoRegen;
 var bool bGameStarted;
 
 function PreBeginPlay(){
+    Nfo(Name$": "$Description);
     if (bFirstRun){
         // generate INI entries on first run
         bFirstRun=False;
