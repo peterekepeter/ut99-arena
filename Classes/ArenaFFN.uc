@@ -8,6 +8,8 @@ var config string Description;
 var config bool bFirstRun;
 var config bool bDebugLog;
 var config string Replace[32];
+var config bool bAutoGenerateAmmoReplacementRules;
+var config bool bPreventAdditionalReplacements;
 var config bool bReplaceDMMutatorToAllowAnyItem;
 var config bool bRemoveDefaultInventory;
 var config bool bShuffleWeapons;
@@ -37,7 +39,7 @@ var ArenaFFNAmmoRegen AmmoRegen;
 var bool bGameStarted;
 
 function PreBeginPlay(){
-    Nfo(Name$": "$Description);
+    Nfo(Class$" "$Description);
     if (bFirstRun){
         // generate INI entries on first run
         bFirstRun=False;
@@ -59,6 +61,9 @@ function PreBeginPlay(){
     bGameStarted = false;
     Nfo("loaded"@ArenaLoadout.GetWeaponCount()@"weapons,"@ArenaLoadout.GetPickupCount()@"pickups for loadout");
     Nfo("registered"@ReplacementRules.GetRuleCount()@"replacement rules");
+    if (bDebugLog){
+        ReplacementRules.PrintAllRules();
+    }
 }
 
 function InitializeLouadout(){
@@ -83,10 +88,16 @@ function InitializeShuffleWeapons(){
 }
 
 function InitializeReplacementRules(){
-    local int i;
+    local int i, errorCount;
     ReplacementRules = Spawn(class'ArenaFFNReplacementRules');
+    
+    ReplacementRules.bAutoGenerateAmmoReplacementRules = bAutoGenerateAmmoReplacementRules;
+    ReplacementRules.bPreventAdditionalReplacements = bPreventAdditionalReplacements;
     for (i = 0; i < MAX_REPLACEMENT_RULES; i += 1){
-        ReplacementRules.AddRuleString(Replace[i]);
+        errorCount = ReplacementRules.AddRuleString(Replace[i]);
+        if (errorCount > 0){
+            Err("Replace["$i$"] had "$errorCount$" error(s)");
+        }
     }
 }
 
@@ -304,4 +315,6 @@ defaultproperties {
     ShuffleTimer=30
     bFirstRun=True
     bReplaceDMMutatorToAllowAnyItem=False
+    bAutoGenerateAmmoReplacementRules=True
+    bPreventAdditionalReplacements=True
 }
