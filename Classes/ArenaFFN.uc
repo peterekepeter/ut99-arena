@@ -10,7 +10,6 @@ var config bool bDebugLog;
 var config string Replace[32];
 var config bool bAutoGenerateAmmoReplacementRules;
 var config bool bPreventAdditionalReplacements;
-var config bool bReplaceDMMutatorToAllowAnyItem; // deprecated please remove
 var config bool bRemoveDefaultInventory;
 var config bool bShuffleWeapons;
 var config int ShuffleTimer;
@@ -48,9 +47,6 @@ function PreBeginPlay(){
         // generate INI entries on first run
         bFirstRun=False;
         SaveConfig(); 
-    }
-    if (bReplaceDMMutatorToAllowAnyItem){
-        ReplaceDMMutator(Level.Game);
     }
     if (bShuffleWeapons && bDropWeapon){
         Nfo("setting bDropWeapon to False because bShuffleWeapons is True");
@@ -321,7 +317,6 @@ defaultproperties {
     bShuffleWeapons=False
     ShuffleTimer=30
     bFirstRun=True
-    bReplaceDMMutatorToAllowAnyItem=False
     bAutoGenerateAmmoReplacementRules=True
     bPreventAdditionalReplacements=True
 }
