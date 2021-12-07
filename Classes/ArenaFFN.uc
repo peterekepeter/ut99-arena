@@ -10,7 +10,7 @@ var config bool bDebugLog;
 var config string Replace[32];
 var config bool bAutoGenerateAmmoReplacementRules;
 var config bool bPreventAdditionalReplacements;
-var config bool bReplaceDMMutatorToAllowAnyItem;
+var config bool bReplaceDMMutatorToAllowAnyItem; // deprecated please remove
 var config bool bRemoveDefaultInventory;
 var config bool bShuffleWeapons;
 var config int ShuffleTimer;
@@ -18,6 +18,10 @@ var config bool bSetPlayerStartingHealth;
 var config int PlayerStartingHealth;
 var config bool bDropWeapon;
 var config bool bRegenAmmo;
+var config float RegenAmmoTimer;
+var config float RegenAmmoModifier;
+var config bool bRegenAmmoInfinite;
+var config string RegenAmmoExclude;
 var config string Loadout[32];
 var config float DamageModifier;
 var config float MomentumModifier;
@@ -79,7 +83,7 @@ function InitializeLouadout(){
 
 function InitializeAmmoRegen(){
     AmmoRegen = Spawn(class'ArenaFFNAmmoRegen');
-    AmmoRegen.Initialize(bRegenAmmo);
+    AmmoRegen.Initialize(bRegenAmmo, RegenAmmoTimer, bRegenAmmoInfinite, RegenAmmoExclude, RegenAmmoModifier);
 }
 
 function InitializeShuffleWeapons(){
@@ -257,7 +261,6 @@ function Timer()
     {
         bIsModifyingPlayer = true;
         ArenaShuffle.EnsurePlayerWeaponIfEnabled(P);
-        AmmoRegen.ApplyAmmoRegenIfEnabled(P);
         bIsModifyingPlayer = false;
     }
 }
@@ -308,6 +311,10 @@ defaultproperties {
     bDebugLog=False
     bDropWeapon=True
     bRegenAmmo=False
+    RegenAmmoTimer=1.000
+    RegenAmmoModifier=0.100
+    bRegenAmmoInfinite=False
+    RegenAmmoExclude="Botpack.WarheadAmmo,Botpack.SuperShockCore"
     bRemoveDefaultInventory=False
     bSetPlayerStartingHealth=False
     PlayerStartingHealth=100
