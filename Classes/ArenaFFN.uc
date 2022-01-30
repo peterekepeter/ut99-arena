@@ -21,6 +21,10 @@ var config float RegenAmmoTimer;
 var config float RegenAmmoModifier;
 var config bool bRegenAmmoInfinite;
 var config string RegenAmmoExclude;
+var config bool bRegenHealth;
+var config float RegenHealthTimer;
+var config int RegenHealthAmount;
+var config int RegenHealthLimit;
 var config string Loadout[32];
 var config float DamageModifier;
 var config float MomentumModifier;
@@ -38,6 +42,7 @@ var ArenaFFNLoadout ArenaLoadout;
 var ArenaFFNReplacementRules ReplacementRules;
 var ArenaFFNShuffle ArenaShuffle;
 var ArenaFFNAmmoRegen AmmoRegen;
+var ArenaFFNHealthRegen HealthRegen;
 
 var bool bGameStarted;
 
@@ -56,6 +61,7 @@ function PreBeginPlay(){
     InitializeReplacementRules();
     InitializeShuffleWeapons();
     InitializeAmmoRegen();
+    InitializeHealthRegen();
     bIsModifyingLevelPickups = true;
     bIsModifyingPlayer = false;
     bGameStarted = false;
@@ -80,6 +86,11 @@ function InitializeLouadout(){
 function InitializeAmmoRegen(){
     AmmoRegen = Spawn(class'ArenaFFNAmmoRegen');
     AmmoRegen.Initialize(bRegenAmmo, RegenAmmoTimer, bRegenAmmoInfinite, RegenAmmoExclude, RegenAmmoModifier);
+}
+
+function InitializeHealthRegen(){
+    HealthRegen = Spawn(class'ArenaFFNHealthRegen');
+    HealthRegen.Initialize(bRegenHealth, RegenHealthTimer, RegenHealthAmount, RegenHealthLimit);
 }
 
 function InitializeShuffleWeapons(){
@@ -261,31 +272,6 @@ function Timer()
     }
 }
 
-function ReplaceDMMutator(GameInfo Game){
-    local Mutator newMutator;
-    local Mutator oldMutator;
-    oldMutator = Game.BaseMutator;
-    if (oldMutator != None && oldMutator.IsA('DMMutator')){
-        newMutator = Spawn(class'ArenaFFNCustomDMMutator');
-        if (newMutator == None){
-            Err("Failed to replace DMMutator: Failed to spawn ArenaFFNCustomDMMutator");
-            return;
-        }
-        newMutator.NextMutator = oldMutator.NextMutator;
-        oldMutator.NextMutator = None;
-        Game.BaseMutator = newMutator;
-
-        // due to how GameInfo is implemented, because if the 
-        // replacement it will fail to add this mutator to the list of mutators
-        // this workaround will manually chain this mutator to the end of the mutator list
-        newMutator.AddMutator(self);
-
-        Nfo("Replaced "$oldMutator$" with "$newMutator);
-    } else {
-        Err("Failed to replace DMMutator: Level.Game.BaseMutator is not DMMutator");
-    }
-}
-
 static function Err(coerce string message)
 {
     class'ArenaFFNUtil'.static.Err(message);
@@ -319,4 +305,8 @@ defaultproperties {
     bFirstRun=True
     bAutoGenerateAmmoReplacementRules=True
     bPreventAdditionalReplacements=True
+    bRegenHealth=False
+    RegenHealthTimer=1
+    RegenHealthAmount=1
+    RegenHealthLimit=100
 }
