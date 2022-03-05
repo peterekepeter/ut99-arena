@@ -38,7 +38,7 @@ function ApplyAmmoRegen(Pawn P)
 	local Ammo A;
 	local Inventory Inv;
 	local int amount;
-
+	
 	if (bInfiniteAmmo)
 	{
 		for( Inv=P.Inventory; Inv!=None; Inv=Inv.Inventory )   
@@ -74,7 +74,7 @@ function ApplyAmmoRegen(Pawn P)
 			}
 		}
 	}
-
+	
 }
 
 function bool WeaponIsFiring(Weapon W)
@@ -117,11 +117,11 @@ function OptimizeExcludeClasses()
 	local int i;
 	local class matcher, rootWeaponClass, rootAmmoClass;
 	local class<Weapon> weaponClass;
-
+	
 	rootWeaponClass = class'Weapon';
 	rootAmmoClass = class'Ammo';
 	optimized = Spawn(class'ArenaFFNClassFilter');
-
+	
 	for (i=0; ExcludeClassFilter.Matchers[i] != None; i=i+1)
 	{
 		matcher = ExcludeClassFilter.Matchers[i];
