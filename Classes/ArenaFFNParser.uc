@@ -2,43 +2,50 @@ class ArenaFFNParser extends ArenaFFNInfo abstract;
 
 const EMPTY_STRING = "";
 
-static function bool TryParseLoadoutItem(string input, out string itemClass, out int itemCount){
-    local string count;
-    local bool result;
-    result = TrySplit(input, "*", itemClass, count);
-    if (count == ""){
-        itemCount = 1;
-    } else {
-        itemCount = int(count);
-    }
-    return result;
+static function bool TryParseLoadoutItem(string input, out string itemClass, out int itemCount)
+{
+	local string count;
+	local bool result;
+	result = TrySplit(input, "*", itemClass, count);
+	if (count == "")
+	{
+		itemCount = 1;
+	} 
+	else 
+	{
+		itemCount = int(count);
+	}
+	return result;
 }
 
 static function bool TryParseReplacementRule(string input, out string toReplace, out string replaceWith)
 {
-    return TrySplit(input, "->", toReplace, replaceWith) && replaceWith != EMPTY_STRING;
+	return TrySplit(input, "->", toReplace, replaceWith) && replaceWith != EMPTY_STRING;
 }
 
 static function bool TrySplit(string input, string separator, out string first, out string rest)
 {
-    local int pos;
+	local int pos;
 
-    if (input == EMPTY_STRING) {
-        first = EMPTY_STRING;
-        rest = EMPTY_STRING;
-        return false;
-    }
+	if (input == EMPTY_STRING) 
+	{
+		first = EMPTY_STRING;
+		rest = EMPTY_STRING;
+		return False;
+	}
 
-    pos = InStr(input, separator);
+	pos = InStr(input, separator);
 
-    if (pos >= 0) {
-        first = Left(input, pos);
-        rest = Mid(input, pos + Len(separator));
-        return true;
-    } 
-    else if (pos == -1) {
-        first = input;
-        rest = "";
-        return true;
-    }
+	if (pos >= 0) 
+	{
+		first = Left(input, pos);
+		rest = Mid(input, pos + Len(separator));
+		return True;
+	} 
+	else if (pos == -1) 
+	{
+		first = input;
+		rest = "";
+		return True;
+	}
 }

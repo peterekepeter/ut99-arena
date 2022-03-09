@@ -8,19 +8,22 @@ var int ShuffleTimer;
 var ArenaFFNLoadout ArenaLouadout;
 var color ShuffleMessageColor;
 
-function Initialize(bool enabled, int timerSeconds, ArenaFFNLoadout louadoutInstance, ArenaFFNReplacementRules replacementRules){
+function Initialize(bool enabled, int timerSeconds, ArenaFFNLoadout louadoutInstance, ArenaFFNReplacementRules replacementRules)
+{
 	local int weaponCount;
 	local string rule;
 	bEnabled = enabled;
-	if (!enabled){
+	if (!enabled)
+	{
 		return;
 	}
 	ShuffleTimer = timerSeconds;
 	weaponCount = louadoutInstance.GetWeaponCount();
 	ArenaLouadout = louadoutInstance;
 	ShuffleTimerCounter = ShuffleTimer;
-	if (weaponCount <= 1){
-		bEnabled = false;
+	if (weaponCount <= 1)
+	{
+		bEnabled = False;
 		Nfo("bShuffleWeapons requires at least 2 weapons to work, disabling bShuffleWeapons");
 		return;
 	}
@@ -32,17 +35,21 @@ function Initialize(bool enabled, int timerSeconds, ArenaFFNLoadout louadoutInst
 	Nfo("bShuffleWeapons disables weapon pickups by adding level replacement rule"@rule);
 }
 
-function ShuffleTimerTickIfEnabled(){
-	if (!bEnabled){
+function ShuffleTimerTickIfEnabled()
+{
+	if (!bEnabled)
+	{
 		return;
 	}
 	ShuffleTimerCounter -= 1;
-	if (ShuffleTimerCounter <= 0){
+	if (ShuffleTimerCounter <= 0)
+	{
 		NextShuffleWeapon();
 	}
 }
 
-function NextShuffleWeapon(){
+function NextShuffleWeapon()
+{
 	local int weaponCount;
 	weaponCount = ArenaLouadout.GetWeaponCount();
 	CurrentShuffleWeaponIndex = NextShuffleWeaponIndex;
@@ -63,34 +70,40 @@ function ModifyPlayer(Pawn pawn)
 	ArenaLouadout.GivePickups(pawn);
 	weaponString = ArenaLouadout.GetWeaponString(CurrentShuffleWeaponIndex);
 	DestroyPlayerWeapons(pawn);
-	class'ArenaFFNUtil'.static.GiveWeapon(pawn, weaponString, false);
+	class'ArenaFFNUtil'.static.GiveWeapon(pawn, weaponString, False);
 }
 
-function EnsurePlayerWeaponIfEnabled(Pawn P){
+function EnsurePlayerWeaponIfEnabled(Pawn P)
+{
 	local class<Weapon> weaponClass;
-	if (!bEnabled){
+	if (!bEnabled)
+	{
 		return;
 	}
 	weaponClass = ArenaLouadout.GetWeaponClass(CurrentShuffleWeaponIndex);
 	EnforcePlayerWeapon(P);
-	if (ShuffleTimerCounter > 0 && ShuffleTimerCounter <= 3) {
+	if (ShuffleTimerCounter > 0 && ShuffleTimerCounter <= 3) 
+	{
 		ShowShuffleMessage(P);
 	}
 }
 
-function EnforcePlayerWeapon(Pawn P){
+function EnforcePlayerWeapon(Pawn P)
+{
 	local string weaponString;
 	weaponString = ArenaLouadout.GetWeaponString(CurrentShuffleWeaponIndex);
 	DestroyPlayerWeapons(P);
-	class'ArenaFFNUtil'.static.GiveWeapon(P, weaponString, false);
+	class'ArenaFFNUtil'.static.GiveWeapon(P, weaponString, False);
 }
 
-function ShowShuffleMessage(Pawn pawn){
+function ShowShuffleMessage(Pawn pawn)
+{
 	local PlayerPawn player;
 	local String weaponName;
 
 	player = PlayerPawn(pawn);
-	if (player == None){
+	if (player == None)
+	{
 		return; // no player to show message for
 	}
 
@@ -107,10 +120,11 @@ function DestroyPlayerWeapons(pawn PlayerPawn)
 	local Inventory i;
 	local Weapon w;
     
-	for( i=PlayerPawn.Inventory; i!=None; i=i.Inventory )
+	for( i = PlayerPawn.Inventory; i!=None; i = i.Inventory )
 	{
 		w = Weapon(i);
-		if (w != None){
+		if (w != None)
+		{
 			i.Destroy();
 			w.Finish();
 		}
@@ -118,6 +132,7 @@ function DestroyPlayerWeapons(pawn PlayerPawn)
 	PlayerPawn.Weapon = None;
 }
 
-defaultproperties {
+defaultproperties 
+{
 	ShuffleMessageColor=(R=255,G=255,B=255)
 }

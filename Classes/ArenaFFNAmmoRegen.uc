@@ -13,18 +13,18 @@ function Initialize(bool enabled, float regenSeconds, bool infiniteAmmo, string 
 	PeriodSeconds = regenSeconds;
 	AmmoAmountScale = regenAmmoModifier;
 	if (enabled)
-	{
+	{ 
 		ExcludeClassFilter = Spawn(class'ArenaFFNClassFilter');
 		ExcludeClassFilter.AddMatchClassesLine(excludeClasses);
 		OptimizeExcludeClasses();
-		SetTimer(PeriodSeconds*Level.TimeDilation, True);
+		SetTimer(PeriodSeconds * Level.TimeDilation, True);
 	}
 }
 
 function Timer()
 {
 	local Pawn P;
-	for (P=Level.PawnList; P!=None; P=P.NextPawn)
+	for (P = Level.PawnList; P!=None; P = P.NextPawn)
 	{
 		if (P.bIsPlayer)
 		{
@@ -41,7 +41,7 @@ function ApplyAmmoRegen(Pawn P)
 	
 	if (bInfiniteAmmo)
 	{
-		for( Inv=P.Inventory; Inv!=None; Inv=Inv.Inventory )   
+		for( Inv = P.Inventory; Inv!=None; Inv = Inv.Inventory )   
 		{
 			A = Ammo(Inv);
 			if (A != None)
@@ -56,7 +56,7 @@ function ApplyAmmoRegen(Pawn P)
 	}
 	else if (True)
 	{
-		for( Inv=P.Inventory; Inv!=None; Inv=Inv.Inventory )   
+		for( Inv = P.Inventory; Inv!=None; Inv = Inv.Inventory )   
 		{
 			A = Ammo(Inv);
 			if (A != None)
@@ -101,7 +101,7 @@ function int GetCurrentAmmo(Pawn P, Weapon W)
 	local class<Ammo> AmmoClass;
 	AmmoClass = W.AmmoName;
 	if (AmmoClass == None)
-		return -1; 
+		return - 1; 
 	Ammo = Ammo(P.FindInventoryType(AmmoClass));
 	if (Ammo == None)
 	{
@@ -122,7 +122,7 @@ function OptimizeExcludeClasses()
 	rootAmmoClass = class'Ammo';
 	optimized = Spawn(class'ArenaFFNClassFilter');
 	
-	for (i=0; ExcludeClassFilter.Matchers[i] != None; i=i+1)
+	for (i = 0; ExcludeClassFilter.Matchers[i] != None; i = i + 1)
 	{
 		matcher = ExcludeClassFilter.Matchers[i];
 		if (matcher == rootWeaponClass)
@@ -132,7 +132,7 @@ function OptimizeExcludeClasses()
 		}
 		if (ClassIsChildOf(matcher, rootWeaponClass))
 		{
-			weaponClass = class<Weapon>(matcher);
+			weaponClass = class < Weapon > (matcher);
 			matcher = weaponClass.default.AmmoName;
 			Nfo("ammo regen transforming"@weaponClass@"into"@matcher);
 		}

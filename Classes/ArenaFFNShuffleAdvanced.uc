@@ -4,7 +4,8 @@ class ArenaFFNShuffleAdvanced extends ArenaFFNShuffle;
 //	Advanced weapon enforcement
 //  	
 
-function EnforcePlayerWeapon(Pawn P){
+function EnforcePlayerWeapon(Pawn P)
+{
 	local Inventory i;
 	local Weapon w;
 	local Ammo a;
@@ -22,7 +23,7 @@ function EnforcePlayerWeapon(Pawn P){
 		GiveWeapon(P, weaponClass);
 	}
 
-	for ( i=P.Inventory; i!=None; i=i.Inventory )
+	for ( i = P.Inventory; i!=None; i = i.Inventory )
 	{
 		a = Ammo(i);
 		if (a != None)
@@ -31,7 +32,8 @@ function EnforcePlayerWeapon(Pawn P){
 			{
 				a.AmmoAmount = 0;
 			}
-			else {
+			else 
+			{
 				a.AmmoAmount = 100;
 			}
 		}
@@ -64,7 +66,7 @@ function EnforcePlayerWeapon(Pawn P){
 }
 
 
-function GiveWeapon(Pawn PlayerPawn, class<Weapon> weaponClass )
+function GiveWeapon(Pawn PlayerPawn, class < Weapon> weaponClass )
 {
 	local Weapon NewWeapon;
 
@@ -73,10 +75,10 @@ function GiveWeapon(Pawn PlayerPawn, class<Weapon> weaponClass )
 	newWeapon = Spawn(WeaponClass);
 	if( newWeapon != None )
 	{
-		newWeapon.bCanThrow = false;
+		newWeapon.bCanThrow = False;
 		newWeapon.RespawnTime = 0.0;
 		newWeapon.GiveTo(PlayerPawn);
-		newWeapon.bHeldItem = true;
+		newWeapon.bHeldItem = True;
 		newWeapon.GiveAmmo(PlayerPawn);
 		newWeapon.SetSwitchPriority(PlayerPawn);
 		newWeapon.WeaponSet(PlayerPawn);
