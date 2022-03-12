@@ -1,7 +1,7 @@
-class NodeReplacer extends Node;
+class NodeReplacer extends ArenaFFNObject;
 
 var NodeReplacer NextReplacer;
-var string ReplacementClassString;
+var string ReplacementString;
 
 
 function int GetReplacerCount()

@@ -7,21 +7,44 @@ var class<ArenaFFNParser> Parser;
 function int Main(string Params)
 {
 	Parser = Class'ArenaFFNParser';
-	TestMatcher();
-	// TestTrySplitCases();
-	// TestTrySplitLoop();
-	// TestParseReplacementRule();
-	// TestTryParseLoadoutItem();
+	TestTrySplitCases();
+	TestTrySplitLoop();
+	TestParseReplacementRule();
+	TestTryParseLoadoutItem();
+	TestMatcherReplacer();
+	TestNodeBuilder();
 	Summary();
 	return GetExitCode();
 }
 
-function TestMatcher()
+function TestNodeBuilder()
+{
+	local NodeMatcher m;
+	local NodeBuilder b;
+	local int errorCount;
+
+	Describe("NodeBuilder");
+
+	b = new class'NodeBuilder';
+
+	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher->Botpack.SuperShockRifle"), 0, "parser rule without errors");
+	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher"), 1, "rule without -> has error");
+	AssertEquals(b.AddRuleString("Banana->Botpack.SuperShockRifle"), 1, "cannot replace class that does not exist");
+	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher->Banana"), 1, "replacement class must exist");
+
+	m = b.GetMatcher();
+	AssertTrue(m != None, "returns non null matcher");
+	AssertEquals(m.GetReplacementString(class'Botpack.WarheadLauncher', 0), "Botpack.SuperShockRifle", "returns replacement string");
+}
+
+function TestMatcherReplacer()
 {
 	local NodeMatcher m, m2;
 	local NodeReplacer r1, r2, r3;
+	local string s;
+	local int i;
 
-	Describe("Get Matcher");
+	Describe("NodeMatcher");
 	m = new class'NodeMatcher';
 	m.ReplaceMatchClass = class'Botpack.WarheadLauncher';  
 	m2 = new class'NodeMatcher';
@@ -32,7 +55,7 @@ function TestMatcher()
 	AssertTrue(m.GetMatch(class'Botpack.ShockRifle') == m2, "second matcher matches");
 	AssertTrue(m.GetMatch(class'Botpack.SuperShockRifle') == m2, "second matcher matches child class");
 
-	Describe("Replacers");
+	Describe("NodeReplacer");
 	r1 = new class'NodeReplacer';
 	r2 = new class'NodeReplacer';
 	r3 = new class'NodeReplacer';
@@ -47,6 +70,38 @@ function TestMatcher()
 	AssertTrue(r1.GetReplacer(2) == r3, "gets replacer 2");
 	AssertTrue(r1.GetReplacer(3) == None, "gets replacer 3 (out of bounds)");
 	AssertTrue(r1.GetReplacer(4) == None, "gets replacer 4 (out of bounds)");
+
+
+	m2.Replacer = r1;
+	m.Replacer = r3;
+	r1.ReplacementString = "Apple";
+	r2.ReplacementString = "Orange";
+	r3.ReplacementString = "Banana";
+
+	Describe("NodeMatcher.GetFirstReplacer");
+
+	AssertTrue(m.GetFirstReplacer(class'Botpack.WarheadLauncher') == r3, "gets correct replacer r3");
+	AssertTrue(m.GetFirstReplacer(class'Engine.Weapon') == None, "returns None if no match");
+	AssertTrue(m.GetFirstReplacer(class'Botpack.ShockRifle') == r1, "gets correct replacer r1");
+
+	Describe("NodeMatcher.GetReplacementString");
+
+	AssertEquals(m.GetReplacementString(class'Botpack.WarheadLauncher', 0), "Banana", "replace WarheadLauncher with banana");
+	AssertEquals(m.GetReplacementString(class'Engine.Weapon', 0), "", "returns empty string if no match");
+	AssertEquals(m.GetReplacementString(class'Botpack.ShockRifle', 0), "Apple", "gets correct replacer r1");
+	AssertEquals(m.GetReplacementString(class'Botpack.ShockRifle', 1), "Orange", "ordered 1 gets correct replacer r2");
+	AssertEquals(m.GetReplacementString(class'Botpack.ShockRifle', 2), "Banana", "ordered 2 gets correct replacer r3");
+
+	Describe("NodeMatcher.GetRandomReplacementString");
+
+	s = m.GetRandomReplacementString(class'Engine.Weapon');
+	AssertEquals(s, "", "returns empty string if no match");
+	s = m.GetRandomReplacementString(class'Botpack.WarheadLauncher');
+	AssertTrue(s == "Banana", "gets same string if 1 candidate");
+	s = m.GetRandomReplacementString(class'Botpack.ShockRifle');
+	AssertTrue(s == "Apple" || s == "Orange" || s == "Banana", "gets random string from 3 candidats");
+
+	
 }
 
 function TestTryParseLoadoutItem()
