@@ -12,9 +12,9 @@ function Initialize(bool enabled, float period, int amount, int limit)
 	PeriodSeconds = period;
 	RegenAmount = amount;
 	RegenMax = limit;
-	Nfo("Initialize hp regen bEnabled"@bEnabled@"PeriodSeconds"@PeriodSeconds@"RegenAmount"@RegenAmount@"RegenMax"@RegenMax);
 	if (enabled)
 	{
+		Nfo("Initialize hp regen bEnabled"@bEnabled@"PeriodSeconds"@PeriodSeconds@"RegenAmount"@RegenAmount@"RegenMax"@RegenMax);
 		SetTimer(PeriodSeconds * Level.TimeDilation, True);
 	} 
 }
@@ -23,7 +23,7 @@ function Initialize(bool enabled, float period, int amount, int limit)
 function Timer()
 {
 	local Pawn P;
-	for (P = Level.PawnList; P!=None; P = P.NextPawn)
+	for (P = Level.PawnList; P != None; P = P.NextPawn)
 	{
 		if (P.bIsPlayer)
 		{

@@ -7,12 +7,46 @@ var class<ArenaFFNParser> Parser;
 function int Main(string Params)
 {
 	Parser = Class'ArenaFFNParser';
-	TestTrySplitCases();
-	TestTrySplitLoop();
-	TestParseReplacementRule();
-	TestTryParseLoadoutItem();
+	TestMatcher();
+	// TestTrySplitCases();
+	// TestTrySplitLoop();
+	// TestParseReplacementRule();
+	// TestTryParseLoadoutItem();
 	Summary();
 	return GetExitCode();
+}
+
+function TestMatcher()
+{
+	local NodeMatcher m, m2;
+	local NodeReplacer r1, r2, r3;
+
+	Describe("Get Matcher");
+	m = new class'NodeMatcher';
+	m.ReplaceMatchClass = class'Botpack.WarheadLauncher';  
+	m2 = new class'NodeMatcher';
+	m2.ReplaceMatchClass = class'Botpack.ShockRifle';
+	m.NextMatcher = m2;
+	
+	AssertTrue(m.GetMatch(class'Botpack.WarheadLauncher') == m, "first matcher matches");
+	AssertTrue(m.GetMatch(class'Botpack.ShockRifle') == m2, "second matcher matches");
+	AssertTrue(m.GetMatch(class'Botpack.SuperShockRifle') == m2, "second matcher matches child class");
+
+	Describe("Replacers");
+	r1 = new class'NodeReplacer';
+	r2 = new class'NodeReplacer';
+	r3 = new class'NodeReplacer';
+	r1.NextReplacer = r2;
+	r2.NextReplacer = r3;
+
+	AssertTrue(r1.GetReplacerCount() == 3, "replacer count is 3 on first node");
+	AssertTrue(r2.GetReplacerCount() == 2, "replacer count is 2 on second node");
+	AssertTrue(r3.GetReplacerCount() == 1, "replacer count is 1 on third node");
+	AssertTrue(r1.GetReplacer(0) == r1, "gets replacer 0");
+	AssertTrue(r1.GetReplacer(1) == r2, "gets replacer 1");
+	AssertTrue(r1.GetReplacer(2) == r3, "gets replacer 2");
+	AssertTrue(r1.GetReplacer(3) == None, "gets replacer 3 (out of bounds)");
+	AssertTrue(r1.GetReplacer(4) == None, "gets replacer 4 (out of bounds)");
 }
 
 function TestTryParseLoadoutItem()

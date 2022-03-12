@@ -16,6 +16,12 @@
             "problemMatcher": []
         },
         {
+            "label": "tdd",
+            "type": "shell",
+            "command": "npx nodemon -w ./Classes --ext \"uc\" --exec \"cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc ArenaFFN.Test\"",
+            "problemMatcher": []
+        },
+        {
             "label": "build & run server profile1",
             "type": "shell",
             "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile1",
@@ -61,6 +67,12 @@
             "label": "build & run server profile8",
             "type": "shell",
             "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-curse][?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile8",
+            "problemMatcher": []
+        },
+        {
+            "label": "build & run server profile9",
+            "type": "shell",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-curse][?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile9",
             "problemMatcher": []
         },
         {
