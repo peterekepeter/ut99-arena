@@ -35,6 +35,14 @@ function TestNodeBuilder()
 	m = b.GetMatcher();
 	AssertTrue(m != None, "returns non null matcher");
 	AssertEquals(m.GetReplacementString(class'Botpack.WarheadLauncher', 0), "Botpack.SuperShockRifle", "returns replacement string");
+
+	AssertEquals(b.AddRuleString("Botpack.ShockRifle->Botpack.SuperShockRifle"), 0, "adds second rule without issues");
+	m = b.GetMatcher();
+	AssertEquals(m.GetReplacementString(class'Botpack.ShockRifle', 0), "Botpack.SuperShockRifle", "returns replacement string from second rule");
+	AssertEquals(m.GetReplacementString(class'Botpack.WarheadLauncher', 0), "Botpack.SuperShockRifle", "still returns replacement string from first rule");
+	
+	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher->Botpack.ShockRifle"), 1, "cannot add same rule twice");
+	
 }
 
 function TestMatcherReplacer()
