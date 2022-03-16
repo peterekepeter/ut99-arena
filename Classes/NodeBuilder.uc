@@ -37,6 +37,8 @@ function bool AddRule(string toReplace, string replaceWith)
 	local class<Actor> replaceClass, withClass;
 	local NodeMatcher matcher, subMatcher;
 	local NodeReplacer replacer;
+	local bool isSelfMatch;
+	isSelfMatch = False;
 
 	replaceClass = class < Actor > (DynamicLoadObject(toReplace, class'Class'));
 	if (replaceClass == None)
@@ -57,6 +59,7 @@ function bool AddRule(string toReplace, string replaceWith)
 			Err("failed to load '"$replaceWith$"'");
 			return False;
 		}
+		isSelfMatch = replaceClass == withClass; 
 		if (bPreventAdditionalReplacements)
 		{
 			subMatcher = GetOrAddMatcher(withClass);
@@ -91,6 +94,7 @@ function bool AddRule(string toReplace, string replaceWith)
 
 	replacer = new class'NodeReplacer';
 	replacer.ReplacementString = replaceWith;
+	replacer.bSelfMatch = isSelfMatch;
 	AppendReplacerToMatcher(matcher, replacer);
 	return True;
 }

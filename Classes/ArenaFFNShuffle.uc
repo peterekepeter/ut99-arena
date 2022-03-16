@@ -8,7 +8,7 @@ var int ShuffleTimer;
 var ArenaFFNLoadout ArenaLouadout;
 var color ShuffleMessageColor;
 
-function Initialize(bool enabled, int timerSeconds, ArenaFFNLoadout louadoutInstance, ArenaFFNReplacementRules replacementRules)
+function Initialize(bool enabled, int timerSeconds, ArenaFFNLoadout louadoutInstance, ArenaFFNReplaceEngine replacementRules)
 {
 	local int weaponCount;
 	local string rule;

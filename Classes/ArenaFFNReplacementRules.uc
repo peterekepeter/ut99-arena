@@ -1,5 +1,5 @@
 
-class ArenaFFNReplacementRules extends ArenaFFNInfo;
+class ArenaFFNReplacementRules extends ArenaFFNReplaceEngine;
 
 const MAX_RULE_COUNT = 286;
 const STR_KEEP = "Keep";

@@ -4,6 +4,7 @@ var NodeMatcher NextMatcher;
 var class ReplaceMatchClass;
 var NodeReplacer Replacer;
 var int ReplacerCount;
+var int _rnd;
 
 
 function string GetRandomReplacementString(Class target)
@@ -20,15 +21,16 @@ function string GetReplacementString(Class target, int index)
 	{
 		return "";
 	}
-	if (ReplacerCount == 0 && Replacer != None)
-	{
-		ReplacerCount = Replacer.GetReplacerCount();
-	}
 	if (index < 0)
 	{
-		index = Rand(ReplacerCount);
+		ReplacerCount = m.Replacer.GetReplacerCount();
+		index = CustomRand(ReplacerCount);
 	}
 	r = m.Replacer.GetReplacer(index);
+	if (r.bSelfMatch)
+	{
+		return "";
+	}
 	return r.ReplacementString;
 }
 
@@ -63,4 +65,16 @@ function bool IsMatch(Class target)
 		return True;
 	}
 	return False;
+}
+
+
+function int CustomRand(int max)
+{
+	local int value;
+	_rnd = (_rnd * 31337 + 12344) / 8;
+	if (_rnd < 0) 
+	{
+		_rnd = -_rnd;
+	}
+	return _rnd - ((_rnd / max) * max);
 }

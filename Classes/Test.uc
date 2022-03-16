@@ -13,8 +13,40 @@ function int Main(string Params)
 	TestTryParseLoadoutItem();
 	TestMatcherReplacer();
 	TestNodeBuilder();
+	TestNodeBuilderWithComplexCase();
 	Summary();
 	return GetExitCode();
+}
+
+function TestNodeBuilderWithComplexCase()
+{
+	local NodeBuilder b;
+	local bool result;
+	local NodeMatcher m;
+	local string s;
+
+	Describe("NodeBuilder complex case");
+
+	b = self.GetBuilder();
+	b.bAutoGenerateAmmoReplacementRules = True;
+	b.bPreventAdditionalReplacements = True;
+	result = b.AddRule("Botpack.ShockRifle","Botpack.PulseGun|Botpack.ShockRifle");
+	AssertTrue(result, "rule added");
+
+	m = b.GetMatcher();
+	s = m.GetReplacementString(class'Botpack.ShockRifle', 0);
+	AssertEquals(s, "Botpack.PulseGun", "can get replaced with PulseGun");
+
+	s = m.GetReplacementString(class'Botpack.ShockRifle', 1);
+	AssertEquals(s, "", "can get replaced with self");
+	// maybe self replace should be Keep!?
+
+	s = m.GetReplacementString(class'Botpack.ShockCore', 0);
+	// AssertEquals(s, "", "shock core replaced with self"); // TODO
+
+	s = m.GetReplacementString(class'Botpack.ShockCore', 1);
+	// AssertEquals(s, "Botpack.PAmmo", "shock core replaced with PAmmo"); // TODO
+
 }
 
 
@@ -25,6 +57,8 @@ function TestNodeBuilder()
 	local NodeBuilder b;
 	local int errorCount;
 	local string s;
+	local int i;
+	local bool b1,b2,b3;
 
 
 	Describe("NodeBuilder");
@@ -97,6 +131,31 @@ function TestNodeBuilder()
 	AssertEquals(m.GetReplacementString(class'Botpack.UT_FlakCannon',2), "Botpack.WarheadLauncher", "returns third replacement");
 	s = m.GetRandomReplacementString(class'Botpack.UT_FlakCannon');
 	AssertTrue(s == "Botpack.ShockRifle" || s == "Botpack.SuperShockRifle" || s == "Botpack.WarheadLauncher", "return random returns expected");
+	
+	b1 = False; 
+	b2 = False; 
+	b3 = False;
+	for (i = 0; i < 10; i ++ )
+	{
+		s = m.GetRandomReplacementString(class'Botpack.UT_FlakCannon');
+		if (s == "Botpack.ShockRifle")
+		{
+			b1 = True;
+		}
+		if (s == "Botpack.SuperShockRifle") 
+		{
+			b2 = True;
+		}
+		if (s == "Botpack.WarheadLauncher")
+		{
+			b3 = True;
+		}
+	}
+	AssertEquals(b1$" "$b2$" "$b3, "True True True", "all 3 types are returned at least once");
+
+	m = BuildMatcherWithAutoAmmo("Botpack.ShockRifle->Botpack.ShockRifle");
+	s = m.GetRandomReplacementString(class'Botpack.ShockRifle');
+	AssertEquals(s, "", "returns empty string on self replacement");
 }
 
 function NodeBuilder GetBuilder()
@@ -112,7 +171,7 @@ function NodeMatcher BuildMatcherWithAutoAmmo(string rule)
 	local NodeBuilder b;
 	b = GetBuilder();
 	b.bAutoGenerateAmmoReplacementRules = True;
-	b.AddRuleString("Engine.Weapon->Botpack.ShockRifle");
+	b.AddRuleString(rule);
 	return b.GetMatcher();
 }
 
@@ -122,6 +181,7 @@ function TestMatcherReplacer()
 	local NodeReplacer r1, r2, r3;
 	local string s;
 	local int i;
+	local bool b1, b2, b3;
 
 	Describe("NodeMatcher");
 	m = new class'NodeMatcher';
@@ -177,8 +237,29 @@ function TestMatcherReplacer()
 	AssertEquals(s, "", "returns empty string if no match");
 	s = m.GetRandomReplacementString(class'Botpack.WarheadLauncher');
 	AssertTrue(s == "Banana", "gets same string if 1 candidate");
-	s = m.GetRandomReplacementString(class'Botpack.ShockRifle');
-	AssertTrue(s == "Apple" || s == "Orange" || s == "Banana", "gets random string from 3 candidats");
+	s = m2.GetRandomReplacementString(class'Botpack.ShockRifle');
+	AssertTrue(s == "Apple" || s == "Orange" || s == "Banana", "gets random string one of from 3 candidats");
+
+	b1 = False; 
+	b2 = False; 
+	b3 = False;
+	for (i = 0; i < 10; i ++ )
+	{
+		s = m2.GetRandomReplacementString(class'Botpack.ShockRifle');
+		if (s == "Apple")
+		{
+			b1 = True;
+		}
+		if (s == "Orange") 
+		{
+			b2 = True;
+		}
+		if (s == "Banana")
+		{
+			b3 = True;
+		}
+	}
+	AssertEquals(b1$" "$b2$" "$b3, "True True True", "all 3 types are returned at least once");
 
 	
 }

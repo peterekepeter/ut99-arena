@@ -72,7 +72,7 @@
         {
             "label": "build & run server profile9",
             "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-curse][?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile9",
+            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile9",
             "problemMatcher": []
         },
         {

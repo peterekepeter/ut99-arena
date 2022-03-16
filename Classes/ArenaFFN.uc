@@ -10,6 +10,7 @@ var config bool bDebugLog;
 var config string Replace[32];
 var config bool bAutoGenerateAmmoReplacementRules;
 var config bool bPreventAdditionalReplacements;
+var config bool bUseNewReplacementEngine;
 var config bool bRemoveDefaultInventory;
 var config bool bShuffleWeapons;
 var config bool bShuffleAdvancedWeaponSwitch;
@@ -40,7 +41,7 @@ var bool bIsModifyingLevelPickups;
 var bool bModifyTeamDamageOrMomentum;
 
 var ArenaFFNLoadout ArenaLoadout;
-var ArenaFFNReplacementRules ReplacementRules;
+var ArenaFFNReplaceEngine ReplacementRules;
 var ArenaFFNShuffle ArenaShuffle;
 var ArenaFFNAmmoRegen AmmoRegen;
 var ArenaFFNHealthRegen HealthRegen;
@@ -93,7 +94,7 @@ function InitializeLouadout()
 function InitializeAmmoRegen()
 {
 	AmmoRegen = Spawn(class'ArenaFFNAmmoRegen');
-	AmmoRegen.Initialize(bRegenAmmo && !(bShuffleWeapons && bShuffleAdvancedWeaponSwitch), RegenAmmoTimer, bRegenAmmoInfinite, RegenAmmoExclude, RegenAmmoModifier);
+	AmmoRegen.Initialize(bRegenAmmo && ! (bShuffleWeapons && bShuffleAdvancedWeaponSwitch), RegenAmmoTimer, bRegenAmmoInfinite, RegenAmmoExclude, RegenAmmoModifier);
 }
 
 function InitializeHealthRegen()
@@ -120,10 +121,17 @@ function InitializeShuffleWeapons()
 function InitializeReplacementRules()
 {
 	local int i, errorCount;
-	ReplacementRules = Spawn(class'ArenaFFNReplacementRules');
+	if (bUseNewReplacementEngine)
+	{
+		ReplacementRules = Spawn(class'ArenaFFNReplaceUsingNodes');
+	}
+	else 
+	{
+		ReplacementRules = Spawn(class'ArenaFFNReplacementRules');
+	}
     
-	ReplacementRules.bAutoGenerateAmmoReplacementRules = bAutoGenerateAmmoReplacementRules;
-	ReplacementRules.bPreventAdditionalReplacements = bPreventAdditionalReplacements;
+	ReplacementRules.SetAutoGenerateAmmoReplacementRules(bAutoGenerateAmmoReplacementRules);
+	ReplacementRules.SetPreventAdditionalReplacements(bPreventAdditionalReplacements);
 	for (i = 0; i < MAX_REPLACEMENT_RULES; i += 1)
 	{
 		errorCount = ReplacementRules.AddRuleString(Replace[i]);
@@ -138,7 +146,7 @@ function PostBeginPlay()
 {
 	SetTimer(1.0, True);
 	Game = DeathMatchPlus(Level.Game);
-	Super.PostBeginPlay();
+	super.PostBeginPlay();
 
 	if (Game != None)
 	{
@@ -298,12 +306,12 @@ function Timer()
 {
 	local Weapon W;
 	local Pawn P;
-	if (!bGameStarted)
+	if ( ! bGameStarted)
 	{
 		return;
 	}
 	ArenaShuffle.ShuffleTimerTickIfEnabled();
-	for (P = Level.PawnList; P!=None; P = P.NextPawn)
+	for (P = Level.PawnList; P != None; P = P.NextPawn)
 	{
 		bIsModifyingPlayer = True;
 		ArenaShuffle.EnsurePlayerWeaponIfEnabled(P);
@@ -346,6 +354,7 @@ defaultproperties
 	bFirstRun=True
 	bAutoGenerateAmmoReplacementRules=True
 	bPreventAdditionalReplacements=True
+	bUseNewReplacementEngine=False
 	bRegenHealth=False
 	RegenHealthTimer=1
 	RegenHealthAmount=1
