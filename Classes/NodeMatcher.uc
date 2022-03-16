@@ -1,7 +1,7 @@
 class NodeMatcher extends ArenaFFNObject;
 
 var NodeMatcher NextMatcher;
-var class<Actor> ReplaceMatchClass;
+var class ReplaceMatchClass;
 var NodeReplacer Replacer;
 var int ReplacerCount;
 

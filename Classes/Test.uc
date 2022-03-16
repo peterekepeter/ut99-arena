@@ -17,15 +17,19 @@ function int Main(string Params)
 	return GetExitCode();
 }
 
+
+
 function TestNodeBuilder()
 {
 	local NodeMatcher m;
 	local NodeBuilder b;
 	local int errorCount;
+	local string s;
+
 
 	Describe("NodeBuilder");
 
-	b = new class'NodeBuilder';
+	b = self.GetBuilder();
 
 	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher->Botpack.SuperShockRifle"), 0, "parser rule without errors");
 	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher"), 1, "rule without -> has error");
@@ -42,7 +46,74 @@ function TestNodeBuilder()
 	AssertEquals(m.GetReplacementString(class'Botpack.WarheadLauncher', 0), "Botpack.SuperShockRifle", "still returns replacement string from first rule");
 	
 	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher->Botpack.ShockRifle"), 1, "cannot add same rule twice");
+
+
+	Describe("NodeBuilder - None & Keep");
+
+	b = self.GetBuilder();
+	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher->None"), 0, "can add replace with None rule");
+	AssertEquals(b.AddRuleString("Botpack.ShockRifle->Keep"), 0, "can add Keep rule");
+	m = b.GetMatcher();
+	AssertEquals(m.GetReplacementString(class'Botpack.WarheadLauncher', 0), "None", "returns None replacement string");
+	AssertEquals(m.GetReplacementString(class'Botpack.ShockRifle', 0), "Keep", "returns Keep replacement string");
+
+
+	Describe("NodeBuilder - bPreventAdditionalReplacements");
+
+	b = GetBuilder();
+	b.bPreventAdditionalReplacements = True;
+	b.AddRuleString("Botpack.WarheadLauncher->Botpack.ShockRifle");
+	s = b.GetMatcher().GetReplacementString(class'Botpack.ShockRifle', 0);
+	AssertEquals(s, "Keep", "when true it generate Keep rule");
+	AssertEquals(b.AddRuleString("Botpack.SuperShockRifle->Botpack.ShockRifle"), 0, "can add second replace rule which would generate same keep rule");
+
+	b = GetBuilder();
+	b.bPreventAdditionalReplacements = False;
+	b.AddRuleString("Botpack.WarheadLauncher->Botpack.ShockRifle");
+	s = b.GetMatcher().GetReplacementString(class'Botpack.ShockRifle', 0);
+	AssertEquals(s, "", "when false it does not generate Keep rule");
 	
+
+	Describe("NodeBuilder - bAutoGenerateAmmoReplacementRules");
+	s = BuildMatcherWithAutoAmmo("Botpack.PulseGun->Botpack.ShockRifle").GetReplacementString(class'Botpack.PAmmo', 0);
+	AssertEquals(s, "Botpack.ShockCore", "generates ammo replacement rule when true");
+	b = GetBuilder();
+	b.AddRuleString("Botpack.PulseGun->Botpack.ShockRifle");
+	s = b.GetMatcher().GetReplacementString(class'Botpack.PAmmo', 0);
+	AssertEquals(s, "", "does not generate ammo replacement rule when false");
+
+	s = BuildMatcherWithAutoAmmo("Engine.Weapon->Botpack.ShockRifle").GetReplacementString(class'Engine.Ammo', 0);
+	AssertEquals(s, "Botpack.ShockCore", "ammo of Engine.Weapon is Engine.Ammo");
+	s = BuildMatcherWithAutoAmmo("Botpack.TournamentWeapon->Botpack.ShockRifle").GetReplacementString(class'Botpack.TournamentAmmo', 0);
+	AssertEquals(s, "Botpack.ShockCore", "ammo of TournamentWeapon is TournamentAmmo");
+
+	Describe("NodeBuilder - random multireplacement");
+	b = GetBuilder();
+	b.bDisableLogs = False;
+	AssertEquals(b.AddRuleString("Engine.Weapon->Botpack.ShockRifle|Botpack.SuperShockRifle|Botpack.WarheadLauncher"), 0, "adds rule with multireplacement");
+	m = b.GetMatcher();
+	AssertEquals(m.GetReplacementString(class'Botpack.UT_FlakCannon',0), "Botpack.ShockRifle", "returns first replacement");
+	AssertEquals(m.GetReplacementString(class'Botpack.UT_FlakCannon',1), "Botpack.SuperShockRifle", "returns second replacement");
+	AssertEquals(m.GetReplacementString(class'Botpack.UT_FlakCannon',2), "Botpack.WarheadLauncher", "returns third replacement");
+	s = m.GetRandomReplacementString(class'Botpack.UT_FlakCannon');
+	AssertTrue(s == "Botpack.ShockRifle" || s == "Botpack.SuperShockRifle" || s == "Botpack.WarheadLauncher", "return random returns expected");
+}
+
+function NodeBuilder GetBuilder()
+{
+	local NodeBuilder b;
+	b = new class'NodeBuilder';
+	b.bDisableLogs = True;
+	return b;
+}
+
+function NodeMatcher BuildMatcherWithAutoAmmo(string rule)
+{
+	local NodeBuilder b;
+	b = GetBuilder();
+	b.bAutoGenerateAmmoReplacementRules = True;
+	b.AddRuleString("Engine.Weapon->Botpack.ShockRifle");
+	return b.GetMatcher();
 }
 
 function TestMatcherReplacer()
