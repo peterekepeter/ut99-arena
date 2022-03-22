@@ -95,6 +95,7 @@ function bool AddRule(string toReplace, string replaceWith)
 	replacer = new class'NodeReplacer';
 	replacer.ReplacementString = replaceWith;
 	replacer.bSelfMatch = isSelfMatch;
+	replacer.bPreventAdditionalReplacements = bPreventAdditionalReplacements;
 	AppendReplacerToMatcher(matcher, replacer);
 	return True;
 }
@@ -183,7 +184,7 @@ function bool AddAmmoReplacement(class replaceClass, class withClass)
         // okay, one of the weapons has no ammo class
 		return True;
 	}
-	if (GetOrAddMatcher(replaceAmmoClass).Replacer != None)
+	if (GetOrAddMatcher(replaceAmmoClass).Replacer != None && ! bAllowMultipleReplace)
 	{
         // okay, there is already a replacement rule for ammo type
 		return True;

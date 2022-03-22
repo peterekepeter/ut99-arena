@@ -29,7 +29,14 @@ function string GetReplacementString(Class target, int index)
 	r = m.Replacer.GetReplacer(index);
 	if (r.bSelfMatch)
 	{
-		return "";
+		if (r.bPreventAdditionalReplacements)
+		{
+			return "Keep";
+		}
+		else 
+		{
+			return "";
+		}
 	}
 	return r.ReplacementString;
 }

@@ -38,18 +38,15 @@ function TestNodeBuilderWithComplexCase()
 	AssertEquals(s, "Botpack.PulseGun", "can get replaced with PulseGun");
 
 	s = m.GetReplacementString(class'Botpack.ShockRifle', 1);
-	AssertEquals(s, "", "can get replaced with self");
-	// maybe self replace should be Keep!?
+	AssertEquals(s, "Keep", "self replace return skeep because of bPreventAdditionalReplacements");
 
 	s = m.GetReplacementString(class'Botpack.ShockCore', 0);
-	// AssertEquals(s, "", "shock core replaced with self"); // TODO
+	AssertEquals(s, "Botpack.PAmmo", "shock core replaced with PAmmo"); 
 
 	s = m.GetReplacementString(class'Botpack.ShockCore', 1);
-	// AssertEquals(s, "Botpack.PAmmo", "shock core replaced with PAmmo"); // TODO
+	AssertEquals(s, "Keep", "shock core replaced with self"); 
 
 }
-
-
 
 function TestNodeBuilder()
 {
@@ -155,14 +152,14 @@ function TestNodeBuilder()
 
 	m = BuildMatcherWithAutoAmmo("Botpack.ShockRifle->Botpack.ShockRifle");
 	s = m.GetRandomReplacementString(class'Botpack.ShockRifle');
-	AssertEquals(s, "", "returns empty string on self replacement");
+	AssertEquals(s, "", "returns empty on self replacement");
 }
 
 function NodeBuilder GetBuilder()
 {
 	local NodeBuilder b;
 	b = new class'NodeBuilder';
-	b.bDisableLogs = True;
+	b.bDisableLogs = False;
 	return b;
 }
 

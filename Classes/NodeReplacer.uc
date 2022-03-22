@@ -3,6 +3,7 @@ class NodeReplacer extends ArenaFFNObject;
 var NodeReplacer NextReplacer;
 var string ReplacementString;
 var bool bSelfMatch;
+var bool bPreventAdditionalReplacements;
 
 
 function int GetReplacerCount()
