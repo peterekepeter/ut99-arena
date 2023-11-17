@@ -24,7 +24,7 @@
         {
             "label": "build & run server",
             "type": "shell",
-            "command": "ucx build FFNArena && ucx ucc server",
+            "command": "ucx build FFNArena && ucx ucc server DM-Fractal?Mutator=FFNArena.Profile8",
             "problemMatcher": []
         }
     ]

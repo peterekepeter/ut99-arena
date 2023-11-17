@@ -1,5 +1,5 @@
 
-class ArenaFFN expands Mutator abstract;
+class ArenaFFN expands Mutator abstract config(FFNArena);
 
 const MAX_REPLACEMENT_RULES = 32;
 const MAX_LOUADOUT_ITEM = 32;
@@ -51,13 +51,13 @@ var bool bGameStarted;
 function PreBeginPlay()
 {
 	Nfo(Class$" "$Description);
-	if (bFirstRun)
+	if ( bFirstRun )
 	{
         // generate INI entries on first run
 		bFirstRun = False;
 		SaveConfig(); 
 	}
-	if (bShuffleWeapons && bDropWeapon)
+	if ( bShuffleWeapons && bDropWeapon )
 	{
 		Nfo("setting bDropWeapon to False because bShuffleWeapons is True");
 		bDropWeapon = False;
@@ -72,7 +72,7 @@ function PreBeginPlay()
 	bGameStarted = False;
 	Nfo("loaded"@ArenaLoadout.GetWeaponCount()@"weapons,"@ArenaLoadout.GetPickupCount()@"pickups for loadout");
 	Nfo("registered"@ReplacementRules.GetRuleCount()@"replacement rules");
-	if (bDebugLog)
+	if ( bDebugLog )
 	{
 		ReplacementRules.PrintAllRules();
 	}
@@ -85,7 +85,7 @@ function InitializeLouadout()
 	ArenaLoadout.SetRemoveDefaultInventory(bRemoveDefaultInventory);
 	ArenaLoadout.ConfigurePlayerStartingHealth(bSetPlayerStartingHealth, PlayerStartingHealth);
 	ArenaLoadout.SetCanThrowWeapon(bDropWeapon);
-	for (i = 0; i < MAX_LOUADOUT_ITEM; i = i + 1)
+	for ( i = 0; i < MAX_LOUADOUT_ITEM; i = i + 1 )
 	{
 		ArenaLoadout.AddLoadoutConfigLine(Loadout[i]);
 	}
@@ -105,7 +105,7 @@ function InitializeHealthRegen()
 
 function InitializeShuffleWeapons()
 {
-	if (bShuffleAdvancedWeaponSwitch)
+	if ( bShuffleAdvancedWeaponSwitch )
 	{
 		Nfo("ArenaFFNShuffle using advanced weapon switcher");
 		ArenaShuffle = Spawn(class'ArenaFFNShuffleAdvanced');
@@ -121,7 +121,7 @@ function InitializeShuffleWeapons()
 function InitializeReplacementRules()
 {
 	local int i, errorCount;
-	if (bUseNewReplacementEngine)
+	if ( bUseNewReplacementEngine )
 	{
 		ReplacementRules = Spawn(class'ArenaFFNReplaceUsingNodes');
 	}
@@ -132,10 +132,10 @@ function InitializeReplacementRules()
     
 	ReplacementRules.SetAutoGenerateAmmoReplacementRules(bAutoGenerateAmmoReplacementRules);
 	ReplacementRules.SetPreventAdditionalReplacements(bPreventAdditionalReplacements);
-	for (i = 0; i < MAX_REPLACEMENT_RULES; i += 1)
+	for ( i = 0; i < MAX_REPLACEMENT_RULES; i += 1 )
 	{
 		errorCount = ReplacementRules.AddRuleString(Replace[i]);
-		if (errorCount > 0)
+		if ( errorCount > 0 )
 		{
 			Err("Replace["$i$"] had "$errorCount$" error(s)");
 		}
@@ -146,9 +146,9 @@ function PostBeginPlay()
 {
 	SetTimer(1.0, True);
 	Game = DeathMatchPlus(Level.Game);
-	super.PostBeginPlay();
+	Super.PostBeginPlay();
 
-	if (Game != None)
+	if ( Game != None )
 	{
 
 		bModifyTeamDamageOrMomentum = Game.bTeamGame && (
@@ -156,10 +156,10 @@ function PostBeginPlay()
 			TeamMomentumModifier != 1.0
 		);
 
-		if (DamageModifier != 1.0 || SelfDamageModifier != 1.0 || 
+		if ( DamageModifier != 1.0 || SelfDamageModifier != 1.0  || 
 			MomentumModifier != 1.0 || SelfMomentumModifier != 1.0)
 		{
-			Game.RegisterDamageMutator(self);
+			Game.RegisterDamageMutator(Self);
 		}
 	}
 	else 
@@ -173,9 +173,9 @@ function AddMutator(Mutator M)
 {
     // don't add the same mutator twice, this can happen with this mutator
     // because if its custom handling when replacing the DM mutator with a custom mutator
-	if (M == self) return;
+	if ( M == Self ) return;
     // same functionality as parent
-	super.AddMutator(M); 
+	Super.AddMutator(M); 
 }
 
 function ModifyPlayer(Pawn pawn)
@@ -186,7 +186,7 @@ function ModifyPlayer(Pawn pawn)
 	bIsModifyingPlayer = True;
 	bIsModifyingLevelPickups = False;
 
-	if (bShuffleWeapons)
+	if ( bShuffleWeapons )
 	{
 		ArenaShuffle.ModifyPlayer(pawn);
 	} 
@@ -206,7 +206,7 @@ function ModifyPlayer(Pawn pawn)
 
 
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, 
-out Vector Momentum, name DamageType)
+	out Vector Momentum, name DamageType)
 {
 	local int VictimTeam;
 	local int InstigatorTeam;
@@ -215,7 +215,7 @@ out Vector Momentum, name DamageType)
 	ActualDamage *= DamageModifier;
 	Momentum *= MomentumModifier;
 
-	if (Victim == InstigatedBy) 
+	if ( Victim == InstigatedBy ) 
 	{
         // apply self damage/momentum modifiers
 		ActualDamage *= SelfDamageModifier;
@@ -226,11 +226,11 @@ out Vector Momentum, name DamageType)
         // apply team damage/momentum modifiers
 		VictimTeam = -1;
 		InstigatorTeam = -2;
-		if (Victim != None) 
+		if ( Victim != None ) 
 			VictimTeam = Victim.PlayerReplicationInfo.Team;
-		if (InstigatedBy != None) 
+		if ( InstigatedBy != None ) 
 			InstigatorTeam = InstigatedBy.PlayerReplicationInfo.Team;
-		if (VictimTeam == InstigatorTeam) 
+		if ( VictimTeam == InstigatorTeam ) 
 		{
 			ActualDamage *= TeamDamageModifier;
 			Momentum *= TeamMomentumModifier;
@@ -244,11 +244,11 @@ function bool AlwaysKeep(Actor Other)
 {
 	local string replacementResult;
 
-	if (ReplacementRules.TryGetReplacementClassString(other, replacementResult))
+	if ( ReplacementRules.TryGetReplacementClassString(other, replacementResult) )
 	{
-		if (ReplacementRules.IsKeep(replacementResult))
+		if ( ReplacementRules.IsKeep(replacementResult) )
 		{
-			if (bDebugLog)
+			if ( bDebugLog )
 			{
 				Nfo("keep"@other);
 			}
@@ -265,15 +265,15 @@ function bool CheckReplacement(Actor other, out byte bSuperRelevant)
 { 
 	local string replacementResult;
     // called by Mutator.IsRelevant
-	if (bIsModifyingPlayer) 
+	if ( bIsModifyingPlayer ) 
 	{
 		return True;
 	}
-	if (ReplacementRules.TryGetReplacementClassString(other, replacementResult))
+	if ( ReplacementRules.TryGetReplacementClassString(other, replacementResult) )
 	{
-		if (ReplacementRules.IsKeep(replacementResult))
+		if ( ReplacementRules.IsKeep(replacementResult) )
 		{
-			if (bDebugLog)
+			if ( bDebugLog )
 			{
 				Nfo("keep"@other);
 			}
@@ -281,7 +281,7 @@ function bool CheckReplacement(Actor other, out byte bSuperRelevant)
 		} 
 		else if (ReplacementRules.IsNone(replacementResult))
 		{
-			if (bDebugLog)
+			if ( bDebugLog )
 			{
 				Nfo("delete"@other);
 			}
@@ -289,7 +289,7 @@ function bool CheckReplacement(Actor other, out byte bSuperRelevant)
 		}
 		else 
 		{
-			if (bDebugLog)
+			if ( bDebugLog )
 			{
 				Nfo("replace"@other@"with"@replacementResult);
 			}
@@ -306,12 +306,12 @@ function Timer()
 {
 	local Weapon W;
 	local Pawn P;
-	if ( ! bGameStarted)
+	if ( !bGameStarted )
 	{
 		return;
 	}
 	ArenaShuffle.ShuffleTimerTickIfEnabled();
-	for (P = Level.PawnList; P != None; P = P.NextPawn)
+	for ( P = Level.PawnList; P != None; P = P.NextPawn )
 	{
 		bIsModifyingPlayer = True;
 		ArenaShuffle.EnsurePlayerWeaponIfEnabled(P);
@@ -338,24 +338,16 @@ defaultproperties
 	SelfMomentumModifier=1.0
 	TeamDamageModifier=1.0
 	TeamMomentumModifier=1.0
-	bDebugLog=False
 	bDropWeapon=True
-	bRegenAmmo=False
 	RegenAmmoTimer=1.000
 	RegenAmmoModifier=0.100
-	bRegenAmmoInfinite=False
 	RegenAmmoExclude="Botpack.WarheadAmmo,Botpack.SuperShockCore"
-	bRemoveDefaultInventory=False
-	bSetPlayerStartingHealth=False
 	PlayerStartingHealth=100
-	bShuffleWeapons=False
 	bShuffleAdvancedWeaponSwitch=True
 	ShuffleTimer=30
 	bFirstRun=True
 	bAutoGenerateAmmoReplacementRules=True
 	bPreventAdditionalReplacements=True
-	bUseNewReplacementEngine=False
-	bRegenHealth=False
 	RegenHealthTimer=1
 	RegenHealthAmount=1
 	RegenHealthLimit=100
