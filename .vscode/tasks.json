@@ -6,90 +6,26 @@
         {
             "label": "build",
             "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini",
+            "command": "ucx build FFNArena",
             "problemMatcher": []
         },
         {
             "label": "build&test",
             "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc ArenaFFN.Test",
+            "command": "ucx build TestFFNArena && ucx ucc TestFFNArena.TestFFNArena",
             "problemMatcher": []
         },
         {
             "label": "tdd",
             "type": "shell",
-            "command": "npx nodemon -w ./Classes --ext \"uc\" --exec \"cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc ArenaFFN.Test\"",
+            "command": "npx nodemon --ext \"uc\" --exec \"ucx build FFNArena && ucx build TestFFNArena && ucx ucc TestFFNArena.TestFFNArena\"",
             "problemMatcher": []
         },
         {
-            "label": "build & run server profile1",
+            "label": "build & run server",
             "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile1",
+            "command": "ucx build FFNArena && ucx ucc server",
             "problemMatcher": []
-        },
-        {
-            "label": "build & run server profile2",
-            "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile2",
-            "problemMatcher": []
-        },
-        {
-            "label": "build & run server profile3",
-            "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile3",
-            "problemMatcher": []
-        },
-        {
-            "label": "build & run server profile4",
-            "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile4",
-            "problemMatcher": []
-        },
-        {
-            "label": "build & run server profile5",
-            "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile5",
-            "problemMatcher": []
-        },
-        {
-            "label": "build & run server profile6",
-            "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile6",
-            "problemMatcher": []
-        },
-        {
-            "label": "build & run server profile7",
-            "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-curse][?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile7",
-            "problemMatcher": []
-        },
-        {
-            "label": "build & run server profile8",
-            "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-curse][?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile8",
-            "problemMatcher": []
-        },
-        {
-            "label": "build & run server profile9",
-            "type": "shell",
-            "command": "cd ../System && del ArenaFFN.u && ucc make ini=..\\ArenaFFN\\project.ini && ucc server dm-fractal?game=Botpack.DeathMatchPlus?mutator=ArenaFFN.Profile9",
-            "problemMatcher": []
-        },
-        {
-            "label": "join server",
-            "type": "shell",
-            "command": "cd ../System && UnrealTournament.exe unreal://127.0.0.1:7777 -log",
-            "problemMatcher": [],
-            "presentation": {
-                "echo": true,
-                "reveal": "silent",
-                "close": true,
-                "focus": false,
-                "panel": "shared",
-                "group": "joinGroup",
-                "showReuseMessage": true,
-                "clear": true
-            }
         }
     ]
 }

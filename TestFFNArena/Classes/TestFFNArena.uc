@@ -1,4 +1,4 @@
-class Test extends Commandlet;
+class TestFFNArena extends Commandlet;
 
 var int FailCount;
 var int PassCount;
