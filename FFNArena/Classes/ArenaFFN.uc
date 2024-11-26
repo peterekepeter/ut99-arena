@@ -94,7 +94,7 @@ function InitializeLouadout()
 function InitializeAmmoRegen()
 {
 	AmmoRegen = Spawn(class'ArenaFFNAmmoRegen');
-	AmmoRegen.Initialize(bRegenAmmo && ! (bShuffleWeapons && bShuffleAdvancedWeaponSwitch), RegenAmmoTimer, bRegenAmmoInfinite, RegenAmmoExclude, RegenAmmoModifier);
+	AmmoRegen.Initialize(bRegenAmmo && !(bShuffleWeapons && bShuffleAdvancedWeaponSwitch), RegenAmmoTimer, bRegenAmmoInfinite, RegenAmmoExclude, RegenAmmoModifier);
 }
 
 function InitializeHealthRegen()
@@ -156,8 +156,8 @@ function PostBeginPlay()
 			TeamMomentumModifier != 1.0
 		);
 
-		if ( DamageModifier != 1.0 || SelfDamageModifier != 1.0  || 
-			MomentumModifier != 1.0 || SelfMomentumModifier != 1.0)
+		if ( DamageModifier != 1.0 || SelfDamageModifier != 1.0 || 
+			MomentumModifier != 1.0 || SelfMomentumModifier != 1.0 )
 		{
 			Game.RegisterDamageMutator(Self);
 		}
@@ -304,18 +304,20 @@ function bool CheckReplacement(Actor other, out byte bSuperRelevant)
 
 function Timer()
 {
-	local Weapon W;
 	local Pawn P;
 	if ( !bGameStarted )
 	{
 		return;
 	}
-	ArenaShuffle.ShuffleTimerTickIfEnabled();
-	for ( P = Level.PawnList; P != None; P = P.NextPawn )
+	if ( bShuffleWeapons ) 
 	{
-		bIsModifyingPlayer = True;
-		ArenaShuffle.EnsurePlayerWeaponIfEnabled(P);
-		bIsModifyingPlayer = False;
+		ArenaShuffle.ShuffleTimerTickIfEnabled();
+		for ( P = Level.PawnList; P != None; P = P.NextPawn )
+		{
+			bIsModifyingPlayer = True;
+			ArenaShuffle.EnsurePlayerWeaponIfEnabled(P);
+			bIsModifyingPlayer = False;
+		}
 	}
 }
 

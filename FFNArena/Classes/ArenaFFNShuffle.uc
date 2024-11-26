@@ -7,6 +7,8 @@ var int NextShuffleWeaponIndex;
 var int ShuffleTimer;
 var ArenaFFNLoadout ArenaLouadout;
 var color ShuffleMessageColor;
+var string CurrentWeaponString;
+var string NextWeaponDisplayName;
 
 function Initialize(bool enabled, int timerSeconds, ArenaFFNLoadout louadoutInstance, ArenaFFNReplaceEngine replacementRules)
 {
@@ -60,49 +62,51 @@ function NextShuffleWeapon()
 		NextShuffleWeaponIndex = (NextShuffleWeaponIndex + 1) % weaponCount;
 	}
 	ShuffleTimerCounter = ShuffleTimer;
+	CurrentWeaponString = ArenaLouadout.GetWeaponString(CurrentShuffleWeaponIndex);
+	NextWeaponDisplayName = ArenaLouadout.GetWeaponClass(NextShuffleWeaponIndex).default.ItemName;
 }
 
 function ModifyPlayer(Pawn pawn)
 {
-	local string weaponString;
 	ArenaLouadout.ModifyPlayerInventory(pawn);
 	ArenaLouadout.ModifyPlayerHealth(pawn);
 	ArenaLouadout.GivePickups(pawn);
-	weaponString = ArenaLouadout.GetWeaponString(CurrentShuffleWeaponIndex);
 	DestroyPlayerWeapons(pawn);
-	class'ArenaFFNUtil'.static.GiveWeapon(pawn, weaponString, False);
+	class'ArenaFFNUtil'.static.GiveWeapon(pawn, CurrentWeaponString, False);
 }
 
 function EnsurePlayerWeaponIfEnabled(Pawn P)
 {
-	local class<Weapon> weaponClass;
-	if (!bEnabled)
+	if ( !bEnabled )
 	{
 		return;
 	}
-	weaponClass = ArenaLouadout.GetWeaponClass(CurrentShuffleWeaponIndex);
-	EnforcePlayerWeapon(P);
-	if (ShuffleTimerCounter > 0 && ShuffleTimerCounter <= 3) 
+
+	if ( !P.IsA('Spectator') )
 	{
-		ShowShuffleMessage(P);
+		EnforcePlayerWeapon(P);
+	}
+	if ( P.IsA('PlayerPawn') )
+	{
+		if ( ShuffleTimerCounter > 0 && ShuffleTimerCounter <= 3 ) 
+		{
+			ShowShuffleMessage(P);
+		}
 	}
 }
 
 function EnforcePlayerWeapon(Pawn P)
 {
-	local string weaponString;
-	weaponString = ArenaLouadout.GetWeaponString(CurrentShuffleWeaponIndex);
 	DestroyPlayerWeapons(P);
-	class'ArenaFFNUtil'.static.GiveWeapon(P, weaponString, False);
+	class'ArenaFFNUtil'.static.GiveWeapon(P, CurrentWeaponString, False);
 }
 
 function ShowShuffleMessage(Pawn pawn)
 {
 	local PlayerPawn player;
-	local String weaponName;
 
 	player = PlayerPawn(pawn);
-	if (player == None)
+	if ( player == None )
 	{
 		return; // no player to show message for
 	}
@@ -111,8 +115,7 @@ function ShowShuffleMessage(Pawn pawn)
 	player.SetProgressTime(1);
     
 	player.SetProgressColor(ShuffleMessageColor, 5);
-	weaponName = ArenaLouadout.GetWeaponClass(NextShuffleWeaponIndex).Default.ItemName;
-	player.SetProgressMessage(weaponName$" in "$ShuffleTimerCounter, 5);
+	player.SetProgressMessage(NextWeaponDisplayName$" in "$ShuffleTimerCounter, 5);
 }
 
 function DestroyPlayerWeapons(pawn PlayerPawn)
