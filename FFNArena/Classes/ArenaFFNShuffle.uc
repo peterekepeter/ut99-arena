@@ -37,6 +37,11 @@ function Initialize(bool enabled, int timerSeconds, ArenaFFNLoadout louadoutInst
 	Nfo("bShuffleWeapons disables weapon pickups by adding level replacement rule"@rule);
 }
 
+function HandleEndGame() 
+{
+	bEnabled = False;	
+}
+
 function ShuffleTimerTickIfEnabled()
 {
 	if (!bEnabled)

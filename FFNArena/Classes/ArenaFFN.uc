@@ -169,6 +169,15 @@ function PostBeginPlay()
 
 }
 
+function bool HandleEndGame()
+{
+	ArenaShuffle.HandleEndGame();
+	
+	if ( NextMutator != None )
+		return NextMutator.HandleEndGame();
+	return False;
+}
+
 function AddMutator(Mutator M)
 {
     // don't add the same mutator twice, this can happen with this mutator
