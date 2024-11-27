@@ -2,6 +2,7 @@ class ArenaFFNShuffle extends ArenaFFNInfo;
 
 var bool bEnabled;
 var int ShuffleTimerCounter;
+var int PrevShuffleWeaponIndex;
 var int CurrentShuffleWeaponIndex;
 var int NextShuffleWeaponIndex;
 var int ShuffleTimer;
@@ -59,13 +60,15 @@ function NextShuffleWeapon()
 {
 	local int weaponCount;
 	weaponCount = ArenaLouadout.GetWeaponCount();
+	PrevShuffleWeaponIndex = CurrentShuffleWeaponIndex;
 	CurrentShuffleWeaponIndex = NextShuffleWeaponIndex;
 	NextShuffleWeaponIndex = Rand(weaponCount);
-    // make sure next weapon is always different
-	if (CurrentShuffleWeaponIndex == NextShuffleWeaponIndex)
-	{
+	// try to avoid previous weapon
+	if ( NextShuffleWeaponIndex == PrevShuffleWeaponIndex )
+		NextShuffleWeaponIndex = Rand(weaponCount);
+    // definitely avoid re-taking current weapon
+	if ( CurrentShuffleWeaponIndex == NextShuffleWeaponIndex )
 		NextShuffleWeaponIndex = (NextShuffleWeaponIndex + 1) % weaponCount;
-	}
 	ShuffleTimerCounter = ShuffleTimer;
 	CurrentWeaponString = ArenaLouadout.GetWeaponString(CurrentShuffleWeaponIndex);
 	NextWeaponDisplayName = ArenaLouadout.GetWeaponClass(NextShuffleWeaponIndex).default.ItemName;
