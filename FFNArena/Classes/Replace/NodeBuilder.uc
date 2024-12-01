@@ -140,7 +140,7 @@ function NodeMatcher GetMatcher()
 	{
 		// return a dummy matcher
 		m = new class'NodeMatcher';
-		m.ReplaceMatchClass = class'ArenaFFN';
+		m.ReplaceMatchClass = class'FFNArenaBase';
 		return m;
 	}
 	return FirstMatcher;

@@ -14,6 +14,7 @@ function int Main(string Params)
 	TestMatcherReplacer();
 	TestNodeBuilder();
 	TestNodeBuilderWithComplexCase();
+	TestParseProfileName();
 	Summary();
 	return GetExitCode();
 }
@@ -27,7 +28,7 @@ function TestNodeBuilderWithComplexCase()
 
 	Describe("NodeBuilder complex case");
 
-	b = self.GetBuilder();
+	b = Self.GetBuilder();
 	b.bAutoGenerateAmmoReplacementRules = True;
 	b.bPreventAdditionalReplacements = True;
 	result = b.AddRule("Botpack.ShockRifle","Botpack.PulseGun|Botpack.ShockRifle");
@@ -60,7 +61,7 @@ function TestNodeBuilder()
 
 	Describe("NodeBuilder");
 
-	b = self.GetBuilder();
+	b = Self.GetBuilder();
 
 	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher->Botpack.SuperShockRifle"), 0, "parser rule without errors");
 	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher"), 1, "rule without -> has error");
@@ -81,7 +82,7 @@ function TestNodeBuilder()
 
 	Describe("NodeBuilder - None & Keep");
 
-	b = self.GetBuilder();
+	b = Self.GetBuilder();
 	AssertEquals(b.AddRuleString("Botpack.WarheadLauncher->None"), 0, "can add replace with None rule");
 	AssertEquals(b.AddRuleString("Botpack.ShockRifle->Keep"), 0, "can add Keep rule");
 	m = b.GetMatcher();
@@ -132,18 +133,18 @@ function TestNodeBuilder()
 	b1 = False; 
 	b2 = False; 
 	b3 = False;
-	for (i = 0; i < 10; i ++ )
+	for ( i = 0; i < 10; i++ )
 	{
 		s = m.GetRandomReplacementString(class'Botpack.UT_FlakCannon');
-		if (s == "Botpack.ShockRifle")
+		if ( s == "Botpack.ShockRifle" )
 		{
 			b1 = True;
 		}
-		if (s == "Botpack.SuperShockRifle") 
+		if ( s == "Botpack.SuperShockRifle" ) 
 		{
 			b2 = True;
 		}
-		if (s == "Botpack.WarheadLauncher")
+		if ( s == "Botpack.WarheadLauncher" )
 		{
 			b3 = True;
 		}
@@ -240,18 +241,18 @@ function TestMatcherReplacer()
 	b1 = False; 
 	b2 = False; 
 	b3 = False;
-	for (i = 0; i < 10; i ++ )
+	for ( i = 0; i < 10; i++ )
 	{
 		s = m2.GetRandomReplacementString(class'Botpack.ShockRifle');
-		if (s == "Apple")
+		if ( s == "Apple" )
 		{
 			b1 = True;
 		}
-		if (s == "Orange") 
+		if ( s == "Orange" ) 
 		{
 			b2 = True;
 		}
-		if (s == "Banana")
+		if ( s == "Banana" )
 		{
 			b3 = True;
 		}
@@ -342,7 +343,7 @@ function TestTrySplitLoop()
 	input = "W1,W2,W3";
 	result[3] = "<did not write>";
 
-	while (Parser.static.TrySplit(input, ",", item, rest)) 
+	while ( Parser.static.TrySplit(input, ",", item, rest) ) 
 	{
 		result[index] = item;
 		input = rest;
@@ -357,9 +358,23 @@ function TestTrySplitLoop()
 
 }
 
+function AssertParseProfile(string input, string expected, string message) 
+{
+	AssertEquals(class'FFNArena'.static.ParseProfileName(input), expected, message);
+}
+
+function TestParseProfileName() 
+{
+	Describe("TestParseProfileName");
+	AssertParseProfile("", "", "empty");
+	AssertParseProfile("ArenaProfile=ABC", "ABC", "basic parse");
+	AssertParseProfile("Game=Something?ArenaProfile=XYZ", "XYZ", "ok when text before");
+	AssertParseProfile("ArenaProfile=123?AfterSomething", "123", "ok when text after");
+}
+
 function AssertEquals(coerce string a, coerce string b, string message)
 {
-	if (a != b) 
+	if ( a != b ) 
 		FailEquals(a,b,message);
 	else 
 		Pass(message);
@@ -367,7 +382,7 @@ function AssertEquals(coerce string a, coerce string b, string message)
 
 function AssertTrue(bool b, string message)
 {
-	if (b != True) 
+	if ( b != True ) 
 		Fail(message);
 	else 
 		Pass(message);
@@ -375,7 +390,7 @@ function AssertTrue(bool b, string message)
 
 function AssertFalse(bool b, string message)
 {
-	if (b != False) 
+	if ( b != False ) 
 		Fail(message);
 	else 
 		Pass(message);
@@ -406,7 +421,7 @@ function Summary()
 
 function int GetExitCode()
 {
-	if (PassCount > 0 && FailCount <= 0)
+	if ( PassCount > 0 && FailCount <= 0 )
 	{
 		return 0;
 	}

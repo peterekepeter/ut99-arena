@@ -26,6 +26,28 @@
             "type": "shell",
             "command": "ucx build FFNArena && ucx ucc server DM-Fractal?Mutator=FFNArena.Profile8",
             "problemMatcher": []
+        },
+        {
+            "label": "build & run server with dynamic profile",
+            "type": "shell",
+            "command": "ucx build FFNArena && ucx ucc server DM-Fractal?Mutator=FFNArena.FFNArena?ArenaProfile=Loaded",
+            "problemMatcher": []
+        },
+        {
+            "label": "join server",
+            "type": "shell",
+            "command": "ucx ut unreal://127.0.0.1:7777",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": true,
+                "reveal": "silent",
+                "close": true,
+                "focus": false,
+                "panel": "shared",
+                "group": "joinGroup",
+                "showReuseMessage": true,
+                "clear": true
+            }
         }
     ]
 }
