@@ -1,1 +1,1 @@
-class Profile9 extends ArenaFFN;
+class Profile9 extends FFNArenaBase;

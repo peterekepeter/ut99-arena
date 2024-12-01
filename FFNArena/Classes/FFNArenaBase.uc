@@ -1,5 +1,5 @@
 
-class ArenaFFN expands Mutator abstract config(FFNArena);
+class FFNArenaBase expands Mutator abstract config(FFNArena);
 
 const MAX_REPLACEMENT_RULES = 32;
 const MAX_LOUADOUT_ITEM = 32;
