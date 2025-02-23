@@ -76,6 +76,12 @@ function LoadConfigurationProfile(string name)
 	SelfMomentumModifier = p.SelfMomentumModifier;
 	TeamDamageModifier = p.TeamDamageModifier;
 	TeamMomentumModifier = p.TeamMomentumModifier;
+	bDropAllOnDeath = p.bDropAllOnDeath;
+	bDropBootsOnDeath = p.bDropBootsOnDeath;
+	bDropUDamageOnDeath = p.bDropUDamageOnDeath;
+	bDropInvisibilityOnDeath = p.bDropInvisibilityOnDeath;
+	bDropRedeemerOnDeath = p.bDropRedeemerOnDeath;
+	bDropArmorOnDeath = p.bDropArmorOnDeath;
 
 	// copy arrays
 	for ( i = 0; i < MAX_REPLACEMENT_RULES; i+=1 ) 

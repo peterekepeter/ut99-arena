@@ -34,6 +34,12 @@ var config float SelfDamageModifier;
 var config float SelfMomentumModifier;
 var config float TeamDamageModifier;
 var config float TeamMomentumModifier;
+var config bool bDropAllOnDeath;
+var config bool bDropBootsOnDeath;
+var config bool bDropUDamageOnDeath;
+var config bool bDropInvisibilityOnDeath;
+var config bool bDropRedeemerOnDeath;
+var config bool bDropArmorOnDeath;
 
 var DeathMatchPlus Game;
 var bool bIsModifyingPlayer;
@@ -327,6 +333,142 @@ function Timer()
 			ArenaShuffle.EnsurePlayerWeaponIfEnabled(P);
 			bIsModifyingPlayer = False;
 		}
+	}
+}
+
+function bool PreventDeath(Pawn Killed, Pawn Killer, name damageType, vector HitLocation)
+{
+	local bool prevented;
+	prevented = False;
+	if ( NextMutator != None )
+		prevented = NextMutator.PreventDeath(Killed,Killer, damageType,HitLocation);
+
+	if ( !prevented )
+		DropPawnInventory(Killed);
+	
+	return prevented;
+}
+
+
+function bool ShouldDrop(Inventory inv)
+{
+	return bDropAllOnDeath
+		|| bDropBootsOnDeath && inv.IsA('UT_JumpBoots')
+		|| bDropUDamageOnDeath && inv.IsA('UDamage')
+		|| bDropInvisibilityOnDeath && inv.IsA('UT_Invisibility')
+		|| bDropRedeemerOnDeath && inv.IsA('WarHeadLauncher')
+		|| bDropArmorOnDeath && (inv.IsA('Armor2') || inv.IsA('ThighPads'))
+		;
+}
+
+function DropPawnInventory( Pawn P )
+{
+	local inventory inv;
+	local Ammo ammo;
+	local weapon weap;
+	local TournamentWeapon tweap;
+	local float speed;
+	local int i, invArrayCount;
+	local Inventory invArray[64];
+
+
+	// need to convert linked list to array, because we're wrecking the list
+	for( inv = P.Inventory; inv != None; inv = inv.Inventory )
+	{
+		if ( !ShouldDrop(inv) ) continue;
+		invArray[invArrayCount] = inv;
+		invArrayCount += 1;
+		if ( invArrayCount == 64 )
+		{
+			Err("Max droppable inventory reached!!!");
+			break;
+		}
+	}
+
+	// additional drop weapons
+	for( i = 0; i < invArrayCount; i+=1 )
+	{
+		inv = invArray[i];
+
+		weap = Weapon(inv);
+		if ( weap != None )
+		{
+			// handle weapon
+			speed = FMax(1, VSize(P.Velocity));
+			weap.Velocity = Normal(P.Velocity / speed + 0.5 * VRand()) * (speed + 280);
+			weap.Velocity.Z = Abs(weap.Velocity.Z);
+			weap.SetLocation(P.Location);
+	
+			// copied from tournament weapon
+			tweap = TournamentWeapon(weap);
+			if ( tweap != None ) 
+			{
+				tweap.bCanClientFire = False;
+				tweap.bSimFall = True;
+				tweap.SimAnim.X = 0;
+				tweap.SimAnim.Y = 0;
+				tweap.SimAnim.Z = 0;
+				tweap.SimAnim.W = 0;
+			}
+			weap.AIRating = weap.default.AIRating;
+			weap.bMuzzleFlash = 0;
+			if ( weap.AmmoType != None )
+			{
+				weap.PickupAmmoCount = weap.AmmoType.AmmoAmount;
+				weap.AmmoType.AmmoAmount = 0;
+			}
+			weap.RespawnTime = 0.0; //don't respawn
+			weap.SetPhysics(PHYS_Falling);
+			weap.RemoteRole = ROLE_DumbProxy;
+			weap.BecomePickup();
+			weap.NetPriority = 2.5;
+			weap.bCollideWorld = True;
+			if ( Pawn(weap.Owner) != None )
+				Pawn(weap.Owner).DeleteInventory(weap);
+			weap.Inventory = None;
+			weap.GotoState('PickUp', 'Dropped');
+	
+			if ( weap.PickupAmmoCount == 0 )
+				weap.Destroy();
+		}
+	}
+
+	// separate look for ammo because dropping weapon will deplete the ammo
+	for( i = 0; i < invArrayCount; i+=1 )
+	{
+		ammo = Ammo(inv);
+		if ( ammo != None )
+		{
+			if ( ammo.AmmoAmount == 0 )
+			{
+				continue; // dont drop useless
+			}
+		}
+		else 
+		{
+			// not weapon, not ammo
+			if ( inv.Charge == 0 ) 
+			{
+				continue; // dont drop useless
+			}
+		}
+		speed = FMax(1, VSize(P.Velocity));
+		inv.Velocity = Normal(P.Velocity / speed + 0.5 * VRand()) * (speed + 280);
+		inv.Velocity.Z = Abs(inv.Velocity.Z);
+		inv.SetLocation(P.Location);
+
+		// drop it, copied from inventory
+		inv.RespawnTime = 0.0; //don't respawn
+		inv.SetPhysics(PHYS_Falling);
+		inv.RemoteRole = ROLE_DumbProxy;
+		inv.BecomePickup();
+		inv.NetPriority = 2.5;
+		inv.NetUpdateFrequency = 20;
+		inv.bCollideWorld = True;
+		inv.GotoState('PickUp', 'Dropped'); // deactivate item before changing owner
+		if ( Pawn(inv.Owner) != None )
+			Pawn(inv.Owner).DeleteInventory(inv); // changes owner to none
+		inv.Inventory = None;
 	}
 }
 

@@ -30,6 +30,12 @@ var config float SelfDamageModifier;
 var config float SelfMomentumModifier;
 var config float TeamDamageModifier;
 var config float TeamMomentumModifier;
+var config bool bDropAllOnDeath;
+var config bool bDropBootsOnDeath;
+var config bool bDropUDamageOnDeath;
+var config bool bDropInvisibilityOnDeath;
+var config bool bDropRedeemerOnDeath;
+var config bool bDropArmorOnDeath;
 
 defaultproperties 
 {
