@@ -7,6 +7,7 @@ const MAX_LOUADOUT_ITEM = 32;
 var config string Description;
 var config bool bFirstRun;
 var config bool bDebugLog;
+var config bool bDebugLogDamage;
 var config string Replace[32];
 var config bool bAutoGenerateAmmoReplacementRules;
 var config bool bPreventAdditionalReplacements;
@@ -34,6 +35,7 @@ var config float SelfDamageModifier;
 var config float SelfMomentumModifier;
 var config float TeamDamageModifier;
 var config float TeamMomentumModifier;
+var config bool bRemoveBulletKnockback;
 var config bool bDropAllOnDeath;
 var config bool bDropBootsOnDeath;
 var config bool bDropUDamageOnDeath;
@@ -223,8 +225,13 @@ function ModifyPlayer(Pawn pawn)
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, 
 	out Vector Momentum, name DamageType)
 {
-	local int VictimTeam;
-	local int InstigatorTeam;
+	local int VictimTeam, InstigatorTeam, initialDamage;
+	local float size, size2;
+	local string msg;
+
+	// save values for debug log
+	initialDamage = ActualDamage;
+	size = VSize(Momentum);
 
     // generic modifiers are always applied
 	ActualDamage *= DamageModifier;
@@ -251,8 +258,26 @@ function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy
 			Momentum *= TeamMomentumModifier;
 		}
 	}
+	
+	if ( bRemoveBulletKnockback && DamageType == 'shot' ) 
+		Momentum *= FClamp((size - 200) * 0.01,0,1);
+
 	if ( NextDamageMutator != None )
 		NextDamageMutator.MutatorTakeDamage( ActualDamage, Victim, InstigatedBy, HitLocation, Momentum, DamageType );
+
+	if ( bDebugLogDamage ) 
+	{
+		msg = "";
+		msg = msg$"dmg: "$initialDamage$" ";
+		if ( initialDamage != ActualDamage ) 
+			msg = msg$"-> "$ActualDamage$" ";
+		msg = msg$"dt: '"$DamageType$"' ";
+		msg = msg$"momentum: "$int(size)$" ";
+		size2 = VSize(Momentum);
+		if ( size != size2 )
+			msg = msg$"-> "$int(size2);
+		Nfo(msg);
+	}
 }
 
 function bool AlwaysKeep(Actor Other)

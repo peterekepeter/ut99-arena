@@ -24,7 +24,6 @@ static function string ParseProfileName(string str)
 		return Mid(str, 0, i);
 }
 
-
 function LoadConfigurationProfile(string name) 
 {
 	local NameConverter nameConverter;
@@ -82,6 +81,8 @@ function LoadConfigurationProfile(string name)
 	bDropInvisibilityOnDeath = p.bDropInvisibilityOnDeath;
 	bDropRedeemerOnDeath = p.bDropRedeemerOnDeath;
 	bDropArmorOnDeath = p.bDropArmorOnDeath;
+	bDebugLogDamage = p.bDebugLogDamage;
+	bRemoveBulletKnockback = p.bRemoveBulletKnockback;
 
 	// copy arrays
 	for ( i = 0; i < MAX_REPLACEMENT_RULES; i+=1 ) 

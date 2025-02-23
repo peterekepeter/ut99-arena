@@ -3,6 +3,7 @@ class ArenaDynamicProfile extends ArenaFFNObject perobjectconfig config(FFNArena
 var config string Description;
 var config bool bFirstRun;
 var config bool bDebugLog;
+var config bool bDebugLogDamage;
 var config string Replace[32];
 var config bool bAutoGenerateAmmoReplacementRules;
 var config bool bPreventAdditionalReplacements;
@@ -30,6 +31,7 @@ var config float SelfDamageModifier;
 var config float SelfMomentumModifier;
 var config float TeamDamageModifier;
 var config float TeamMomentumModifier;
+var config bool bRemoveBulletKnockback;
 var config bool bDropAllOnDeath;
 var config bool bDropBootsOnDeath;
 var config bool bDropUDamageOnDeath;
