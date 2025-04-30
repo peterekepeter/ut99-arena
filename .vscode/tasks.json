@@ -34,6 +34,12 @@
             "problemMatcher": []
         },
         {
+            "label": "build & run server with dynamic profile v2",
+            "type": "shell",
+            "command": "ucx build FFNArena && ucx ucc server DM-Fractal?Mutator=FFNArena.FFNArena?FFNArena=Loaded",
+            "problemMatcher": []
+        },
+        {
             "label": "join server",
             "type": "shell",
             "command": "ucx ut unreal://127.0.0.1:7777",

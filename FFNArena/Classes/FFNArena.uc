@@ -9,19 +9,36 @@ function PreBeginPlay()
 	Super.PreBeginPlay();
 }
 
-static function string ParseProfileName(string str) 
+static function string ParseProfileName(string url) 
 {
 	local int i;
 
-	i = InStr(str, "ArenaProfile=");
-	if ( i < -1 ) 
-		return "";
-	str = Mid(str, i + 13); // lenght of key
-	i = InStr(str, "?");
-	if ( i == -1 )
-		return str;
-	else 
-		return Mid(str, 0, i);
+	i = InStr(url, "?ArenaProfile=");
+	if ( i > -1 )
+	{
+		// deprecated branch, requires profile name to be
+		// prefixed with "ArenaProfile" which is cluncky
+		// and counter intuitive
+
+		url = Mid(url, i + 14); // lenght of key
+		i = InStr(url, "?");
+		if ( i == -1 )
+			return "ArenaProfile"$url;
+		else 
+			return "ArenaProfile"$Mid(url, 0, i);
+	}
+
+	i = InStr(url, "?FFNArena=");
+
+	if ( i > -1 )
+	{
+		url = Mid(url, i + 10); // lenght of key
+		i = InStr(url, "?");
+		if ( i == -1 )
+			return url;
+		else 
+			return Mid(url, 0, i);
+	}
 }
 
 function LoadConfigurationProfile(string name) 
@@ -33,8 +50,8 @@ function LoadConfigurationProfile(string name)
 
 	nameConverter = new class'NameConverter';
 
-	n = nameConverter.Convert("ArenaProfile"$name);
-	Nfo("Using config from "@n);
+	n = nameConverter.Convert(name);
+	Nfo("Using dynamic profile ["$n$"] from FFNArena.ini");
 	
 	// from FFNArena.ini load secion n
 	p = new (class'FFNArena', n)class'ArenaDynamicProfile';
