@@ -1,9 +1,11 @@
-
-# FFNArena
+# FFNArena for UT99 ( Unreal Tournament )
 
 [![ci](../../workflows/ci/badge.svg)](../../actions/workflows/ci.yml)
 
-Is a general use mutators capable of modifying the rules of the game:
+[Download from releases!](../../releases)
+
+This is a custom mutator for UT99 compatible with versions 436+ meant
+for server admin usage to be able to modify the rules of the game:
 
  - replace any actor with any other actor
  - remove default inventory
@@ -13,11 +15,15 @@ Is a general use mutators capable of modifying the rules of the game:
  - health regeneration
  - add starting inventory (Loadout)
  - modify damage and momentum values by a scalar
-    - separate settings for team and self damage
+ - prevent or reduce self damage
+ - prevent or reduce team boost
  - remove bullet knockback effect (stun)
- - drop items in invetnory upon death
+ - drop items from inventory upon death
 
-## Profiles
+
+## Usage and Profiles
+
+For example profiles see the provided [FFNArena.ini](./FFNArena.ini)
 
 These configurations are called profiles. Profiles can be defined 
 and loaded in multiple ways.
@@ -50,8 +56,6 @@ ArenaFFN: registered 0 replacement rules
 
 After a profile is run for the first time it should generate an empty
 profile entry in `FFNArena.ini` which you can then modify.
-
-For example usage see the provide [FFNArena.ini](./FFNArena.ini)
 
 
 ## Debugging
