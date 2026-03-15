@@ -43,6 +43,7 @@ var config bool bDropInvisibilityOnDeath;
 var config bool bDropRedeemerOnDeath;
 var config bool bDropArmorOnDeath;
 var config bool bDelayedPowerupSpawn;
+var config int PowerupProtectionThreshold;
 
 var DeathMatchPlus Game;
 var bool bIsModifyingPlayer;
@@ -56,6 +57,9 @@ var ArenaFFNAmmoRegen AmmoRegen;
 var ArenaFFNHealthRegen HealthRegen;
 
 var bool bGameStarted;
+var float TopScore;
+var ArenaDesireabilityTimeout LastADT;
+var color PowerupProtectionMessageColor;
 
 function PreBeginPlay()
 {
@@ -208,6 +212,9 @@ function ModifyPlayer(Pawn pawn)
 	bIsModifyingPlayer = True;
 	bIsModifyingLevelPickups = False;
 
+	if ( NextMutator != None )
+		NextMutator.ModifyPlayer(pawn);
+
 	if ( bShuffleWeapons )
 	{
 		ArenaShuffle.ModifyPlayer(pawn);
@@ -216,9 +223,6 @@ function ModifyPlayer(Pawn pawn)
 	{
 		ArenaLoadout.ModifyPlayer(pawn);
 	}
-
-	if ( NextMutator != None )
-		NextMutator.ModifyPlayer(pawn);
 
 	bot = Bot(pawn);
 	if ( bot != None )
@@ -382,6 +386,75 @@ function Timer()
 	}
 }
 
+function bool HandlePickupQuery(Pawn Other, Inventory item, out byte bAllowPickup)
+{
+	local bool nextResult;
+	local string msg;
+	local PlayerPawn P;
+
+	if ( NextMutator != None )
+		nextResult = NextMutator.HandlePickupQuery(Other, item, bAllowPickup);
+	
+	if ( PowerupProtectionThreshold > 0 )
+	{
+		if ( item.RespawnTime > 30.0 )
+		{
+			if ( TopScore - Other.PlayerReplicationInfo.Score <= PowerupProtectionThreshold )
+			{
+				if ( Bot(Other) != None )
+				{
+					if ( LastADT.TargetItem != item )
+					{
+						LastADT = Spawn(class'ArenaDesireabilityTimeout');
+						LastADT.SetDesireabilityTimeout(item);
+					}
+				}
+				P = PlayerPawn(Other);
+				if ( P != None )
+				{
+					if ( Other.PlayerReplicationInfo.Score == TopScore )
+					{
+						switch (Rand(4))
+						{
+							case 0: msg = "Nice try, but you don't need this-you're already a legend!"; break;
+							case 1: msg = "Why bother? You're already the best of the best!"; break;
+							case 2: msg = "You're too skilled for this! Your arsenal is already stacked!"; break;
+							default: msg = "Leave this for the novices; champions like you don't need it!"; break;
+						}
+					}
+					else if ( TopScore < PowerupProtectionThreshold )
+					{
+						switch (Rand(2))
+						{
+							case 0: msg = "Scores are still low; maybe hold off on that for now!"; break;
+							default: msg = "Scores are just starting to roll in; wait a bit!"; break;
+						}
+					}
+					else 
+					{
+						switch (Rand(6))
+						{
+							case 2: msg = "You already have what it takes! This item is beneath you!"; break;
+							case 1: msg = "This item is reserved for rookies only. Keep shining!"; break;
+							case 2: msg = "This gear can't keep up with your skills. Move along!"; break;
+							case 3: msg = "Only the unworthy can use this! You're above it!"; break;
+							case 4: msg = "You're too good to be weighed down by that!"; break;
+							default: msg = "This item is for starters-your greatness exceeds it!"; break;
+						}
+					}
+					P.SetProgressMessage(msg, 0);
+					P.SetProgressColor(PowerupProtectionMessageColor, 0);
+					P.SetProgressTime(3);
+				}
+				bAllowPickup = 0;
+				return True;
+			}
+		}
+	}
+
+	return nextResult;
+}
+
 function bool PreventDeath(Pawn Killed, Pawn Killer, name damageType, vector HitLocation)
 {
 	local bool prevented;
@@ -518,6 +591,13 @@ function DropPawnInventory( Pawn P )
 	}
 }
 
+function ScoreKill(Pawn Killer, Pawn Other)
+{
+	Super.ScoreKill(Killer, Other);
+
+	TopScore = FMax(TopScore, Killer.PlayerReplicationInfo.Score);
+}
+
 static function Err(coerce string message)
 {
 	class'ArenaFFNUtil'.static.Err(message);
@@ -550,4 +630,5 @@ defaultproperties
 	RegenHealthTimer=1
 	RegenHealthAmount=1
 	RegenHealthLimit=100
+	PowerupProtectionMessageColor=(R=255,G=255,B=255=)
 }

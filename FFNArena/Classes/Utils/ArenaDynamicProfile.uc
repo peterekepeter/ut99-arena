@@ -39,6 +39,7 @@ var config bool bDropInvisibilityOnDeath;
 var config bool bDropRedeemerOnDeath;
 var config bool bDropArmorOnDeath;
 var config bool bDelayedPowerupSpawn;
+var config int PowerupProtectionThreshold;
 
 defaultproperties 
 {

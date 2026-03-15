@@ -101,6 +101,7 @@ function LoadConfigurationProfile(string name)
 	bDebugLogDamage = p.bDebugLogDamage;
 	bRemoveBulletKnockback = p.bRemoveBulletKnockback;
 	bDelayedPowerupSpawn = p.bDelayedPowerupSpawn;
+	PowerupProtectionThreshold = p.PowerupProtectionThreshold;
 
 	// copy arrays
 	for ( i = 0; i < MAX_REPLACEMENT_RULES; i+=1 ) 
