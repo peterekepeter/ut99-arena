@@ -42,6 +42,7 @@ var config bool bDropUDamageOnDeath;
 var config bool bDropInvisibilityOnDeath;
 var config bool bDropRedeemerOnDeath;
 var config bool bDropArmorOnDeath;
+var config bool bDelayedPowerupSpawn;
 
 var DeathMatchPlus Game;
 var bool bIsModifyingPlayer;
@@ -199,7 +200,11 @@ function ModifyPlayer(Pawn pawn)
 {
 	// called by GameInfo.RestartPlayer()
 	local Bot bot;
-	bGameStarted = True;
+	if ( !bGameStarted )
+	{
+		bGameStarted = True;
+		HandleStartGame();
+	}
 	bIsModifyingPlayer = True;
 	bIsModifyingLevelPickups = False;
 
@@ -221,6 +226,22 @@ function ModifyPlayer(Pawn pawn)
 	bIsModifyingPlayer = False;
 }
 
+function HandleStartGame()
+{
+	if ( bDelayedPowerupSpawn ) ApplyDelayedPowerupSpawn();
+}
+
+function ApplyDelayedPowerupSpawn()
+{
+	local Inventory I;
+	
+	foreach AllActors(class'Inventory', I)
+	{
+		if ( I.bHeldItem ) continue;
+		// heuristic: respawn time is large for high power pickups
+		if ( I.RespawnTime > 30.0 ) I.SetRespawn();
+	}
+}
 
 function MutatorTakeDamage( out int ActualDamage, Pawn Victim, Pawn InstigatedBy, out Vector HitLocation, 
 	out Vector Momentum, name DamageType)

@@ -100,6 +100,7 @@ function LoadConfigurationProfile(string name)
 	bDropArmorOnDeath = p.bDropArmorOnDeath;
 	bDebugLogDamage = p.bDebugLogDamage;
 	bRemoveBulletKnockback = p.bRemoveBulletKnockback;
+	bDelayedPowerupSpawn = p.bDelayedPowerupSpawn;
 
 	// copy arrays
 	for ( i = 0; i < MAX_REPLACEMENT_RULES; i+=1 ) 
