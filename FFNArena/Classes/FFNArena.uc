@@ -102,6 +102,7 @@ function LoadConfigurationProfile(string name)
 	bRemoveBulletKnockback = p.bRemoveBulletKnockback;
 	bDelayedPowerupSpawn = p.bDelayedPowerupSpawn;
 	PowerupProtectionThreshold = p.PowerupProtectionThreshold;
+	bRandomizeInventoryRespawn = p.bRandomizeInventoryRespawn;
 
 	// copy arrays
 	for ( i = 0; i < MAX_REPLACEMENT_RULES; i+=1 ) 

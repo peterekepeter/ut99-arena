@@ -3,6 +3,7 @@ class FFNArenaBase expands Mutator abstract config(FFNArena);
 
 const MAX_REPLACEMENT_RULES = 32;
 const MAX_LOUADOUT_ITEM = 32;
+const POWERUP_THRESHOLD = 45.0; // items with larger respawn time are considered high power power-ups
 
 var config string Description;
 var config bool bFirstRun;
@@ -44,6 +45,7 @@ var config bool bDropRedeemerOnDeath;
 var config bool bDropArmorOnDeath;
 var config bool bDelayedPowerupSpawn;
 var config int PowerupProtectionThreshold;
+var config bool bRandomizeInventoryRespawn;
 
 var DeathMatchPlus Game;
 var bool bIsModifyingPlayer;
@@ -233,6 +235,7 @@ function ModifyPlayer(Pawn pawn)
 function HandleStartGame()
 {
 	if ( bDelayedPowerupSpawn ) ApplyDelayedPowerupSpawn();
+	if ( bRandomizeInventoryRespawn ) ApplyRandomizedRespawnTimes();
 }
 
 function ApplyDelayedPowerupSpawn()
@@ -242,8 +245,24 @@ function ApplyDelayedPowerupSpawn()
 	foreach AllActors(class'Inventory', I)
 	{
 		if ( I.bHeldItem ) continue;
-		// heuristic: respawn time is large for high power pickups
-		if ( I.RespawnTime > 30.0 ) I.SetRespawn();
+		if ( I.RespawnTime > POWERUP_THRESHOLD ) I.SetRespawn();
+	}
+}
+
+function ApplyRandomizedRespawnTimes()
+{
+	local Inventory I;
+	local float baseTime, variance;
+	
+	foreach AllActors(class'Inventory', I)
+	{
+		if ( I.bHeldItem ) continue;
+		baseTime = I.Default.RespawnTime;
+		if ( baseTime > 0 && I.RespawnTime == baseTime )
+		{
+			variance = baseTime * 0.1 * (FRand() * 2 - 1);
+			I.RespawnTime = baseTime + variance;
+		}
 	}
 }
 
@@ -397,7 +416,7 @@ function bool HandlePickupQuery(Pawn Other, Inventory item, out byte bAllowPicku
 	
 	if ( PowerupProtectionThreshold > 0 )
 	{
-		if ( item.RespawnTime > 30.0 )
+		if ( item.RespawnTime > POWERUP_THRESHOLD )
 		{
 			if ( TopScore - Other.PlayerReplicationInfo.Score <= PowerupProtectionThreshold )
 			{

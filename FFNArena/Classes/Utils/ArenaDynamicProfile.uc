@@ -40,6 +40,7 @@ var config bool bDropRedeemerOnDeath;
 var config bool bDropArmorOnDeath;
 var config bool bDelayedPowerupSpawn;
 var config int PowerupProtectionThreshold;
+var config bool bRandomizeInventoryRespawn;
 
 defaultproperties 
 {
